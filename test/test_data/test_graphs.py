@@ -77,11 +77,22 @@ class TestGraph(unittest.TestCase):
     def test_post_order(self):
         self.assertRaises(ValueError, self.g1.post_order, 'fake')
 
-        self.assertEqual(['a', 'b', 'c', 'u'], self.g1.post_order('u'))
+        acceptable_orders = [['a', 'b', 'c', 'u'],
+                             ['a', 'c', 'b', 'u'],
+                             ['b', 'c', 'a', 'u'],
+                             ['b', 'a', 'c', 'u'],
+                             ['c', 'a', 'b', 'u'],
+                             ['c', 'b', 'a', 'u']]
+        actual = self.g1.post_order('u')
+        self.assertTrue(actual in acceptable_orders)
         self.assertEqual(['y', 'x'], self.g1.post_order('x'))
 
     def test_topological_sort(self):
-        print(self.g2.topological_sort())
+        self.assertEqual([], self.g_empty.topological_sort())
+
+        g2_order = self.g2.topological_sort()
+        for u, v in self.g2.edges():
+            self.assertTrue(g2_order.index(u) < g2_order.index(v))
 
 
 if __name__ == '__main__':

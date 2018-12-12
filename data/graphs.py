@@ -8,10 +8,30 @@ class DirectedGraph:
         """
         Initialize a new empty Graph instance.
         """
-        # TODO: Consider adjacency list vs. adjacency set
         self._nodes = set()
         self._a_in = dict()
         self._a_out = dict()
+
+    def nodes(self):
+        """
+        Get a list of nodes in this graph.
+
+        :return: a list of defined nodes
+        """
+        return list(self._nodes)
+
+    def edges(self):
+        """
+        Get a list of edges in this graph, represented as 2-tuples (from_node,
+        to_node).
+
+        :return: a list of defined edges
+        """
+        e = []
+        for u in self._nodes:
+            for v in self._a_out[u]:
+                e.append((u, v))
+        return e
 
     def add_node(self, name):
         """
@@ -96,11 +116,28 @@ class DirectedGraph:
 
     def topological_sort(self):
         """
-        Topologically sort this graph using DFS calls from each node.
+        Topologically sort this graph by repeatedly removing a node with no
+        incoming edges and all of its outgoing edges and adding it to the order.
 
         :return: a topological ordering of this graph
         """
         # TODO: Raise exception if not DAG, or make method on DAG type
         # TODO: Implement using DFS
 
-        stack = []
+        # the number of incoming edges for each node
+        in_degrees = {key: len(val) for key, val in self._a_in.items()}
+        # the next nodes to be removed
+        stack = [v for v in self._nodes if in_degrees[v] == 0]
+        # the topological ordering
+        order = []
+
+        while stack:
+            u = stack.pop()
+            order.append(u)
+
+            for v in self._a_out[u]:
+                in_degrees[v] -= 1
+                if in_degrees[v] == 0:
+                    stack.append(v)
+
+        return order
