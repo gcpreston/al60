@@ -114,11 +114,13 @@ class DirectedGraph:
 
         return order
 
-    def topological_sort(self):
+    def topological_sort(self, key=None):
         """
         Topologically sort this graph by repeatedly removing a node with no
         incoming edges and all of its outgoing edges and adding it to the order.
 
+        :param key: a function of one argument used to extract a comparison key
+            to determine which node to visit first (the "smallest" element)
         :return: a topological ordering of this graph
         """
         # TODO: Raise exception if not DAG, or make method on DAG type
@@ -126,18 +128,26 @@ class DirectedGraph:
 
         # the number of incoming edges for each node
         in_degrees = {key: len(val) for key, val in self._a_in.items()}
-        # the next nodes to be removed
-        stack = [v for v in self._nodes if in_degrees[v] == 0]
+        # the nodes ready to be removed
+        ready = [v for v in self._nodes if in_degrees[v] == 0]
         # the topological ordering
         order = []
 
-        while stack:
-            u = stack.pop()
+        def pop_min(l):
+            if key:
+                _, idx = min((ready[i], i) for i in range(len(ready)))
+                return l.pop(idx)
+            else:
+                _, idx = min((ready[i], i) for i in range(len(ready)))
+                return l.pop(idx)
+
+        while ready:
+            u = pop_min(ready)
             order.append(u)
 
             for v in self._a_out[u]:
                 in_degrees[v] -= 1
                 if in_degrees[v] == 0:
-                    stack.append(v)
+                    ready.append(v)
 
         return order

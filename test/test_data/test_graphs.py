@@ -94,6 +94,8 @@ class TestGraph(unittest.TestCase):
         for u, v in self.g2.edges():
             self.assertTrue(g2_order.index(u) < g2_order.index(v))
 
+        # TODO: Test key
+
 
 if __name__ == '__main__':
     unittest.main()
