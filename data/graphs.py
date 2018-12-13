@@ -33,12 +33,38 @@ class DirectedGraph:
                 e.append((u, v))
         return e
 
+    def in_edges(self, v):
+        """
+        Get the incoming edges for the given node.
+
+        :param v: the node to get the incoming edges for
+        :return: the incoming edges of v
+        :raises ValueError: if v is not a defined node
+        """
+        if v not in self._nodes:
+            raise ValueError(f'node {v} is not defined')
+
+        return [(u, v) for u in self._a_in[v]]
+
+    def out_edges(self, u):
+        """
+        Get the outgoing edges for the given node.
+
+        :param u: the node to get the outgoing edges for
+        :return: the outgoing edges of v
+        :raises ValueError: if v is not a defined node
+        """
+        if u not in self._nodes:
+            raise ValueError(f'node {u} is not defined')
+
+        return [(u, v) for v in self._a_out[u]]
+
     def add_node(self, name):
         """
         Add a node to this graph.
 
         :param name: the name of the node to add
-        :raises ValueError if name is a previously defined node
+        :raises ValueError: if name is a previously defined node
         """
         if name in self._nodes:
             raise ValueError(f'node {name} is already defined')
@@ -47,13 +73,23 @@ class DirectedGraph:
         self._a_in[name] = set()
         self._a_out[name] = set()
 
+    def add_nodes(self, *names):
+        """
+        Shortcut for adding multiple nodes in one call.
+
+        :param names: the names of the nodes to add
+        :raises ValueError: if any name is a previously defined node
+        """
+        for name in names:
+            self.add_node(name)
+
     def add_edge(self, u, v):
         """
         Add an edge between nodes u and v.
 
         :param u: the 'from' node
         :param v: the 'to' node
-        :raises ValueError if u or v is not a defined node or (u, v) is a
+        :raises ValueError: if u or v is not a defined node or (u, v) is a
             previously defined edge
         """
         # add quotes to str if needed
@@ -79,7 +115,7 @@ class DirectedGraph:
         :param post_visit: a function to execute on each discovered node after
             it is visited
         :return: a list of the discovered nodes
-        :raises ValueError if v is not a defined node
+        :raises ValueError: if v is not a defined node
         """
         if v not in self._nodes:
             raise ValueError(f'node {v} is not defined')
@@ -104,7 +140,7 @@ class DirectedGraph:
 
         :param v: the node to search from
         :return: a list of nodes in the order they were done being processed
-        :raises ValueError if v is not a defined node
+        :raises ValueError: if v is not a defined node
         """
         if v not in self._nodes:
             raise ValueError(f'node {v} is not defined')
@@ -135,7 +171,8 @@ class DirectedGraph:
 
         def pop_min(l):
             if key:
-                _, idx = min((ready[i], i) for i in range(len(ready)))
+                _, idx = min([(ready[i], i) for i in range(len(ready))],
+                             key=key)
                 return l.pop(idx)
             else:
                 _, idx = min((ready[i], i) for i in range(len(ready)))

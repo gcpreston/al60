@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-setup(name='Algorithms',
+setup(name='algorithms',
       version='0.0',
       description='Various algorithm implementations',
       author='Graham Preston',
