@@ -56,7 +56,7 @@ def topological_sort(graph: Graph, key=None):
         u = pop_min(ready)
         order.append(u)
 
-        for v in graph.out_nodes(u):
+        for v in graph.neighbors(u):
             in_degrees[v] -= 1
             if in_degrees[v] == 0:
                 ready.append(v)

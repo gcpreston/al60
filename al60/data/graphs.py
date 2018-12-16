@@ -62,14 +62,13 @@ class Graph(abc.ABC):
 
         return set(self._a_in[v])
 
-    # TODO: Change name to neighbors?
-    def out_nodes(self, u):
+    def neighbors(self, u):
         """
-        Get the set of nodes that v has outgoing edges to.
+        Get the set of nodes that u has outgoing edges to.
 
-        :param u: the node to get the outgoing nodes for
-        :return: the outgoing nodes of v
-        :raises ValueError: if v is not a defined node
+        :param u: the node to get the neighbors of
+        :return: the neighbors of u
+        :raises ValueError: if u is not a defined node
         """
         if u not in self._nodes:
             raise ValueError(f'node {u} is not defined')

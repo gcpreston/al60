@@ -61,7 +61,7 @@ class DepthFirstIterator(GraphIterator):
         curr = self._worklist.pop()
         self._remaining.remove(curr)
 
-        neighbors = list(self._graph.out_nodes(curr))
+        neighbors = list(self._graph.neighbors(curr))
         neighbors.sort(key=self._key)
         # reverse because DFS uses a stack and nodes to be visited last should
         # be put on the bottom
@@ -86,7 +86,7 @@ class BreadthFirstIterator(GraphIterator):
         curr = self._worklist.pop()
         self._remaining.remove(curr)
 
-        neighbors = list(self._graph.out_nodes(curr))
+        neighbors = list(self._graph.neighbors(curr))
         neighbors.sort(key=self._key)
 
         for n in neighbors:
