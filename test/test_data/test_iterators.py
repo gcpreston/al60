@@ -1,3 +1,7 @@
+"""
+Tests for iterators defined in data.iterators.
+"""
+
 import unittest
 
 from data.graphs import DirectedGraph
@@ -5,14 +9,14 @@ from data.iterators import DepthFirstIterator
 
 
 class TestDepthFirstIterator(unittest.TestCase):
-    """Tests for DepthFirstIterator"""
+    """
+    Tests for DepthFirstIterator.
+    """
 
     def setUp(self):
         self.g = DirectedGraph()
-        self.g.add_node('u')
-        self.g.add_node('a')
-        self.g.add_node('b')
-        self.g.add_node('c')
+        self.g.add_nodes('u', 'a', 'b', 'c')
+        self.g.add_nodes('x', 'y')
 
         self.g.add_edge('u', 'a')
         self.g.add_edge('a', 'u')
@@ -21,9 +25,11 @@ class TestDepthFirstIterator(unittest.TestCase):
         self.g.add_edge('c', 'b')
         self.g.add_edge('b', 'u')
 
-    def test_iterator(self):
-        g_dfs = []
-        for node in DepthFirstIterator(self.g, 'u'):
-            g_dfs.append(node)
+        self.g.add_edge('x', 'y')
 
-        self.assertEqual(['u', 'a', 'c', 'b'], g_dfs)
+    def test_iterator(self):
+        g_u = [node for node in DepthFirstIterator(self.g, 'u')]
+        g_x = [node for node in DepthFirstIterator(self.g, 'x')]
+
+        self.assertEqual(['u', 'a', 'c', 'b'], g_u)
+        self.assertEqual(['x', 'y'], g_x)

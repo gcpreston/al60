@@ -1,5 +1,9 @@
+"""
+Various iterators over defined data structures.
+"""
+
 from collections import deque
-from .graphs import DirectedGraph
+from .graphs import Graph
 
 
 class DepthFirstIterator:
@@ -7,7 +11,7 @@ class DepthFirstIterator:
     Iterate over a graph in depth-first order.
     """
 
-    def __init__(self, graph: DirectedGraph, start, key=None):
+    def __init__(self, graph: Graph, start, key=None):
         """
         Create a new DepthFirstIterator object.
 
@@ -45,7 +49,7 @@ class DepthFirstIterator:
         :param u: the node to add the
         :raises ValueError: if current is not defined in self._graph
         """
-        children = [v for _, v in self._graph.out_edges(u)]
+        children = list(self._graph.out_nodes(u))
         children.sort(key=self._key)
         # reverse because DFS uses a stack and nodes to be visited last should
         # be put on the bottom

@@ -1,9 +1,13 @@
+"""
+Tests for graph classes defined in data.graphs.
+"""
+
 import unittest
 
 from data.graphs import DirectedGraph
 
 
-class TestGraph(unittest.TestCase):
+class TestDirectedGraph(unittest.TestCase):
     """
     Tests for DirectedGraph.
     """
@@ -62,39 +66,6 @@ class TestGraph(unittest.TestCase):
 
     def test_add_edge_undefined_node(self):
         self.assertRaises(ValueError, self.g_empty.add_edge, 'hello', 'world')
-
-    def test_dfs(self):
-        self.assertRaises(ValueError, self.g1.dfs, 'fake')
-
-        u_found = self.g1.dfs('u')
-        x_found = self.g1.dfs('x')
-
-        self.assertEqual({'u', 'a', 'c', 'b'}, u_found)
-        self.assertEqual({'x', 'y'}, x_found)
-
-        # TODO: Test pre_visit and post_visit
-
-    def test_post_order(self):
-        self.assertRaises(ValueError, self.g1.post_order, 'fake')
-
-        acceptable_orders = [['a', 'b', 'c', 'u'],
-                             ['a', 'c', 'b', 'u'],
-                             ['b', 'c', 'a', 'u'],
-                             ['b', 'a', 'c', 'u'],
-                             ['c', 'a', 'b', 'u'],
-                             ['c', 'b', 'a', 'u']]
-        actual = self.g1.post_order('u')
-        self.assertTrue(actual in acceptable_orders)
-        self.assertEqual(['y', 'x'], self.g1.post_order('x'))
-
-    def test_topological_sort(self):
-        self.assertEqual([], self.g_empty.topological_sort())
-
-        g2_order = self.g2.topological_sort()
-        for u, v in self.g2.edges():
-            self.assertTrue(g2_order.index(u) < g2_order.index(v))
-
-        # TODO: Test key
 
 
 if __name__ == '__main__':
