@@ -1,12 +1,5 @@
 """
 Module for graph representations.
-
-This module makes use of abstract base
-classes. Various concrete classes are subclasses of an abstract base class,
-overriding its methods, as well as creating its own helper methods. Any
-override of an abstract method will not repeat documentation from the abstract
-base class. Any override of a non-abstract method will include documentation
-indicating what has changed.
 """
 
 import abc
@@ -17,6 +10,10 @@ class Graph(abc.ABC):
     Abstract base class for a graph relating nodes with edges. Implements code
     common between all Graph subclasses, which is a directed graph using an
     adjacency set for edge representation.
+
+    Please note that in Python, False == 0 and True == 1. Therefore,
+    {1}.add(True) remains {1}. This means that if 1 is a defined node, a node
+    True cannot be defined, and vice versa. The same goes for 0 and False.
     """
 
     @abc.abstractmethod
@@ -121,7 +118,6 @@ class Graph(abc.ABC):
         self._a_out[u].add(v)
 
 
-# TODO: Remove and use Graph as DirectedGraph?
 class DirectedGraph(Graph):
     """
     An unweighted, directed graph. Graph has all the implementation details of a
@@ -130,6 +126,9 @@ class DirectedGraph(Graph):
     """
 
     def __init__(self):
+        """
+        Initialize a new DirectedGraph.
+        """
         super().__init__()
 
 
@@ -139,6 +138,9 @@ class UndirectedGraph(Graph):
     """
 
     def __init__(self):
+        """
+        Initialize a new UndirectedGraph.
+        """
         super().__init__()
 
     def edges(self):
