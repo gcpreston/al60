@@ -19,6 +19,7 @@ class Graph(abc.ABC):
     adjacency set for edge representation.
     """
 
+    @abc.abstractmethod
     def __init__(self):
         """
         Initialize default instance variables.
@@ -120,6 +121,7 @@ class Graph(abc.ABC):
         self._a_out[u].add(v)
 
 
+# TODO: Remove and use Graph as DirectedGraph?
 class DirectedGraph(Graph):
     """
     An unweighted, directed graph. Graph has all the implementation details of a
@@ -127,11 +129,17 @@ class DirectedGraph(Graph):
     concrete class name.
     """
 
+    def __init__(self):
+        super().__init__()
+
 
 class UndirectedGraph(Graph):
     """
     An unweighted, undirected graph.
     """
+
+    def __init__(self):
+        super().__init__()
 
     def edges(self):
         """

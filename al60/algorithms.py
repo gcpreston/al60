@@ -2,8 +2,8 @@
 Various algorithm implementations.
 """
 
-from al60.data import Graph
-from al60.data import DepthFirstIterator
+from al60.data.graphs import Graph
+from al60.data.iterators import DepthFirstIterator
 
 
 def post_order(graph: Graph, v):

@@ -2,13 +2,15 @@
 Various iterators over defined data structures.
 """
 
+import abc
+
 from collections import deque
 from .graphs import Graph
 
 
-class DepthFirstIterator:
+class GraphIterator(abc.ABC):
     """
-    Iterate over a graph in depth-first order.
+    Abstract base class for graph iterators.
     """
 
     def __init__(self, graph: Graph, start, key=None):
@@ -35,21 +37,31 @@ class DepthFirstIterator:
 
     def __next__(self):
         if self._worklist:
-            u = self._worklist.pop()
-            self._visit(u)
-            return u
+            return self._visit()
         else:
             raise StopIteration
 
-    def _visit(self, u):
+    @abc.abstractmethod
+    def _visit(self):
         """
-        Add the unencountered nodes current has out-edges to to the worklist and
-        remove them from the remaining nodes.
+        Visit the node on the end of the worklist. Update the worklist with the
+        new node(s) to visit and remove newly discovered nodes from remaining.
 
-        :param u: the node to add the
-        :raises ValueError: if current is not defined in self._graph
+        :return: the next node in the worklist
         """
+        pass
+
+
+class DepthFirstIterator(GraphIterator):
+    """
+    Iterate over a graph in depth-first order.
+    """
+
+    # TODO: Fix bug where node is added to worklist but then found quicker
+    def _visit(self):
+        u = self._worklist.pop()
         children = list(self._graph.out_nodes(u))
+        # TODO: Handle if < is not supported
         children.sort(key=self._key)
         # reverse because DFS uses a stack and nodes to be visited last should
         # be put on the bottom
@@ -59,3 +71,24 @@ class DepthFirstIterator:
             if v in self._remaining:
                 self._worklist.append(v)
                 self._remaining.remove(v)
+
+        return u
+
+
+class BreadthFirstIterator(GraphIterator):
+    """
+    Iterate over a graph in breadth-first order.
+    """
+
+    def _visit(self):
+        u = self._worklist.pop()
+        children = list(self._graph.out_nodes(u))
+        # TODO: Handle if < is not supported
+        children.sort(key=self._key)
+
+        for v in children:
+            if v in self._remaining:
+                self._worklist.appendleft(v)
+                self._remaining.remove(v)
+
+        return u

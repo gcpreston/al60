@@ -4,8 +4,8 @@ Tests for iterators defined in data.iterators.
 
 import unittest
 
-from al60.data import DirectedGraph
-from al60.data import DepthFirstIterator
+from al60.data.graphs import DirectedGraph, UndirectedGraph
+from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
 
 
 class TestDepthFirstIterator(unittest.TestCase):
@@ -14,22 +14,97 @@ class TestDepthFirstIterator(unittest.TestCase):
     """
 
     def setUp(self):
-        self.g = DirectedGraph()
-        self.g.add_nodes('u', 'a', 'b', 'c')
-        self.g.add_nodes('x', 'y')
+        self.g1 = DirectedGraph()
+        self.g1.add_nodes('u', 'a', 'b', 'c')
+        self.g1.add_nodes('x', 'y')
+        self.g1.add_edge('u', 'a')
+        self.g1.add_edge('a', 'u')
+        self.g1.add_edge('u', 'c')
+        self.g1.add_edge('c', 'a')
+        self.g1.add_edge('c', 'b')
+        self.g1.add_edge('b', 'u')
+        self.g1.add_edge('x', 'y')
 
-        self.g.add_edge('u', 'a')
-        self.g.add_edge('a', 'u')
-        self.g.add_edge('u', 'c')
-        self.g.add_edge('c', 'a')
-        self.g.add_edge('c', 'b')
-        self.g.add_edge('b', 'u')
-
-        self.g.add_edge('x', 'y')
+        self.g2 = UndirectedGraph()
+        self.g2.add_nodes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 's')
+        self.g2.add_edge('a', 'b')
+        self.g2.add_edge('a', 's')
+        self.g2.add_edge('s', 'c')
+        self.g2.add_edge('s', 'g')
+        self.g2.add_edge('c', 'd')
+        self.g2.add_edge('c', 'e')
+        self.g2.add_edge('c', 'f')
+        self.g2.add_edge('f', 'g')
+        self.g2.add_edge('g', 'h')
+        self.g2.add_edge('h', 'e')
 
     def test_iterator(self):
-        g_u = [node for node in DepthFirstIterator(self.g, 'u')]
-        g_x = [node for node in DepthFirstIterator(self.g, 'x')]
+        g1_u = list(DepthFirstIterator(self.g1, 'u'))
+        g1_x = list(DepthFirstIterator(self.g1, 'x'))
 
-        self.assertEqual(['u', 'a', 'c', 'b'], g_u)
-        self.assertEqual(['x', 'y'], g_x)
+        self.assertEqual(['u', 'a', 'c', 'b'], g1_u)
+        self.assertEqual(['x', 'y'], g1_x)
+
+        g2_a = list(DepthFirstIterator(self.g2, 'a'))
+
+        self.assertEqual(['a', 'b', 's', 'c', 'd', 'e', 'h', 'g', 'f'], g2_a)
+
+    def test_key(self):
+        # reverse alphabetical order
+        g1_u = list(DepthFirstIterator(self.g1, 'u', key=lambda x: -1 * ord(x)))
+        g2_a = list(DepthFirstIterator(self.g2, 'a', key=lambda x: -1 * ord(x)))
+
+        self.assertEqual(['u', 'c', 'b', 'a'], g1_u)
+        self.assertEqual(['a', 's', 'g', 'h', 'e', 'c', 'f', 'd', 'b'], g2_a)
+
+
+class TestBreadthFirstIterator(unittest.TestCase):
+    """
+    Tests for BreadthFirstIterator.
+    """
+
+    def setUp(self):
+        self.g1 = DirectedGraph()
+        self.g1.add_nodes('u', 'a', 'b', 'c')
+        self.g1.add_nodes('x', 'y')
+        self.g1.add_edge('u', 'a')
+        self.g1.add_edge('a', 'u')
+        self.g1.add_edge('u', 'c')
+        self.g1.add_edge('c', 'a')
+        self.g1.add_edge('c', 'b')
+        self.g1.add_edge('b', 'u')
+        self.g1.add_edge('x', 'y')
+
+        self.g2 = UndirectedGraph()
+        self.g2.add_nodes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 's')
+        self.g2.add_edge('a', 'b')
+        self.g2.add_edge('a', 's')
+        self.g2.add_edge('s', 'c')
+        self.g2.add_edge('s', 'g')
+        self.g2.add_edge('c', 'd')
+        self.g2.add_edge('c', 'e')
+        self.g2.add_edge('c', 'f')
+        self.g2.add_edge('f', 'g')
+        self.g2.add_edge('g', 'h')
+        self.g2.add_edge('h', 'e')
+
+    def test_iterator(self):
+        g1_u = list(BreadthFirstIterator(self.g1, 'u'))
+        g1_x = list(BreadthFirstIterator(self.g1, 'x'))
+
+        self.assertEqual(['u', 'a', 'c', 'b'], g1_u)
+        self.assertEqual(['x', 'y'], g1_x)
+
+        g2_a = list(BreadthFirstIterator(self.g2, 'a'))
+
+        self.assertEqual(['a', 'b', 's', 'c', 'g', 'd', 'e', 'f', 'h'], g2_a)
+
+    def test_key(self):
+        # reverse alphabetical order
+        g1_u = list(BreadthFirstIterator(self.g1, 'u',
+                                         key=lambda x: -1 * ord(x)))
+        g2_a = list(BreadthFirstIterator(self.g2, 'a',
+                                         key=lambda x: -1 * ord(x)))
+
+        self.assertEqual(['u', 'c', 'a', 'b'], g1_u)
+        self.assertEqual(['a', 's', 'b', 'g', 'c', 'h', 'f', 'e', 'd'], g2_a)
