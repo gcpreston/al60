@@ -4,8 +4,8 @@ Tests for iterators defined in data.iterators.
 
 import unittest
 
-from data.graphs import DirectedGraph
-from data.iterators import DepthFirstIterator
+from al60.data import DirectedGraph
+from al60.data import DepthFirstIterator
 
 
 class TestDepthFirstIterator(unittest.TestCase):

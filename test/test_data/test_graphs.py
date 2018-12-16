@@ -4,7 +4,7 @@ Tests for graph classes defined in data.graphs.
 
 import unittest
 
-from data.graphs import DirectedGraph
+from al60.data import DirectedGraph
 
 
 class TestDirectedGraph(unittest.TestCase):

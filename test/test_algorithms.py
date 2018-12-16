@@ -4,8 +4,8 @@ Tests for algorithm implementations in algorithms module.
 
 import unittest
 
-from data.graphs import DirectedGraph
-from algorithms import post_order, topological_sort
+from al60.data import DirectedGraph
+from al60.algorithms import post_order, topological_sort
 
 
 class TestGraphAlgorithms(unittest.TestCase):
