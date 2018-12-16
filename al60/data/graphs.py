@@ -62,6 +62,7 @@ class Graph(abc.ABC):
 
         return set(self._a_in[v])
 
+    # TODO: Change name to neighbors?
     def out_nodes(self, u):
         """
         Get the set of nodes that v has outgoing edges to.

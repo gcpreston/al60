@@ -30,7 +30,6 @@ class GraphIterator(abc.ABC):
         self._key = key
         self._worklist = deque([start])
         self._remaining = set(graph.nodes())
-        self._remaining.remove(start)
 
     def __iter__(self):
         return self
@@ -41,6 +40,7 @@ class GraphIterator(abc.ABC):
         else:
             raise StopIteration
 
+    # TODO: Abstract more code
     @abc.abstractmethod
     def _visit(self):
         """
@@ -57,22 +57,24 @@ class DepthFirstIterator(GraphIterator):
     Iterate over a graph in depth-first order.
     """
 
-    # TODO: Fix bug where node is added to worklist but then found quicker
     def _visit(self):
-        u = self._worklist.pop()
-        children = list(self._graph.out_nodes(u))
-        # TODO: Handle if < is not supported
-        children.sort(key=self._key)
+        curr = self._worklist.pop()
+        self._remaining.remove(curr)
+
+        neighbors = list(self._graph.out_nodes(curr))
+        neighbors.sort(key=self._key)
         # reverse because DFS uses a stack and nodes to be visited last should
         # be put on the bottom
-        children.reverse()
+        neighbors.reverse()
 
-        for v in children:
-            if v in self._remaining:
-                self._worklist.append(v)
-                self._remaining.remove(v)
+        for n in neighbors:
+            if n in self._remaining:
+                # move n to top of stack
+                if n in self._worklist:
+                    self._worklist.remove(n)
+                self._worklist.append(n)
 
-        return u
+        return curr
 
 
 class BreadthFirstIterator(GraphIterator):
@@ -81,14 +83,16 @@ class BreadthFirstIterator(GraphIterator):
     """
 
     def _visit(self):
-        u = self._worklist.pop()
-        children = list(self._graph.out_nodes(u))
-        # TODO: Handle if < is not supported
-        children.sort(key=self._key)
+        curr = self._worklist.pop()
+        self._remaining.remove(curr)
 
-        for v in children:
-            if v in self._remaining:
-                self._worklist.appendleft(v)
-                self._remaining.remove(v)
+        neighbors = list(self._graph.out_nodes(curr))
+        neighbors.sort(key=self._key)
 
-        return u
+        for n in neighbors:
+            # do not visit later in worklist if already queued
+            if n in self._remaining and n not in self._worklist:
+                self._worklist.appendleft(n)
+
+        return curr
+
