@@ -5,7 +5,7 @@ from data.graphs import DirectedGraph
 
 class TestGraph(unittest.TestCase):
     """
-    Tests for data.graphs.DirectedGraph object.
+    Tests for DirectedGraph.
     """
 
     def setUp(self):

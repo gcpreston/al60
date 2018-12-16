@@ -12,6 +12,7 @@ class DirectedGraph:
         self._a_in = dict()
         self._a_out = dict()
 
+    # TODO: Return set?
     def nodes(self):
         """
         Get a list of nodes in this graph.
@@ -104,6 +105,7 @@ class DirectedGraph:
         self._a_in[v].add(u)
         self._a_out[u].add(v)
 
+    # TODO: Why *args instead of x?
     def dfs(self, v, pre_visit=lambda *args: None,
             post_visit=lambda *args: None):
         """
