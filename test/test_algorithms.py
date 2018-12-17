@@ -70,7 +70,7 @@ class TestGraphAlgorithms(unittest.TestCase):
         # TODO: Test key
 
     def test_count_components(self):
-        self.assertTrue(tuple(components(self.g3)) in
+        self.assertTrue(components(self.g3) in
                         itertools.permutations([{'a', 'b', 'c'},
                                                 {'x', 'y', 'z'}]))
         # TODO: More tests

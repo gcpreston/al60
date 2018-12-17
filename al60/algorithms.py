@@ -75,12 +75,12 @@ def components(graph: UndirectedGraph):
     given graph. Implemented as follows:
 
     1. Create a set containing the nodes of the graph.
-    2. Create an empty tuple.
-    3. Perform a breadth-first search from any node in the set.
-    4. Remove the discovered nodes from the set and add them to the tuple as a
+    2. Create an empty list.
+    3. Perform a breadth-first search from any node in the set: O(|V| + |E|)
+    4. Remove the discovered nodes from the set and add them to the list as a
        new set.
-    5. Repeat until the set is tuple.
-    6. Return the tuple
+    5. Repeat until the set is empty.
+    6. Convert the list to a tuple and return it.
 
     :param graph: the undirected graph to operate on
     :return: a tuple of connected components
@@ -94,4 +94,4 @@ def components(graph: UndirectedGraph):
         nodes.difference_update(discovered)
         comps.append(discovered)
 
-    return comps  # 6.
+    return tuple(comps)  # 6.
