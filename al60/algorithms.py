@@ -2,15 +2,16 @@
 Various algorithm implementations.
 """
 
-from al60.data.graphs import Graph
-from al60.data.iterators import DepthFirstIterator
+from al60.data.graphs import Graph, UndirectedGraph
+from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
 
 
 def post_order(graph: Graph, v):
     """
     Compute the post-order of the given graph using a depth-first search from v.
+    Runs in O(|V| + |E|) time due to DFS.
 
-    :param graph: the graph to get the post-order of
+    :param graph: the graph to operate on
     :param v: the node to search from
     :return: a list of nodes in the order they were done being processed
     :raises ValueError: if v is not a defined node
@@ -28,17 +29,20 @@ def topological_sort(graph: Graph, key=None):
     Topologically sort this graph by repeatedly removing a node with no
     incoming edges and all of its outgoing edges and adding it to the order.
 
-    :param graph: the graph to topologically sort
+    https://courses.cs.washington.edu/courses/cse326/03wi/lectures/RaoLect20.pdf
+
+    :param graph: the graph to operate on
     :param key: a function of one argument used to extract a comparison key
         to determine which node to visit first (the "smallest" element)
-    :return: a topological ordering of this graph
+    :return: a topological ordering of the given graph
     """
     # TODO: Raise exception if not DAG
     # TODO: Implement using DFS
+    # TODO: Implement using priority queue
 
-    # the number of incoming edges for each node
+    # the number of incoming edges for each node: O(|E|)
     in_degrees = {v: len(graph.in_nodes(v)) for v in graph.nodes()}
-    # the nodes ready to be removed
+    # the nodes ready to be removed: O(|V|)
     ready = [v for v in graph.nodes() if in_degrees[v] == 0]
     # the topological ordering
     order = []
@@ -52,6 +56,7 @@ def topological_sort(graph: Graph, key=None):
             _, idx = min((ready[i], i) for i in range(len(ready)))
             return l.pop(idx)
 
+    # dequeue and output: O(|V|)?
     while ready:
         u = pop_min(ready)
         order.append(u)
@@ -62,3 +67,31 @@ def topological_sort(graph: Graph, key=None):
                 ready.append(v)
 
     return order
+
+
+def components(graph: UndirectedGraph):
+    """
+    Compute a tuple of sets of nodes that make up connected components in the
+    given graph. Implemented as follows:
+
+    1. Create a set containing the nodes of the graph.
+    2. Create an empty tuple.
+    3. Perform a breadth-first search from any node in the set.
+    4. Remove the discovered nodes from the set and add them to the tuple as a
+       new set.
+    5. Repeat until the set is tuple.
+    6. Return the tuple
+
+    :param graph: the undirected graph to operate on
+    :return: a tuple of connected components
+    """
+    nodes = graph.nodes()  # 1.
+    comps = []  # 2.
+
+    while nodes:  # 5.
+        discovered = set(BreadthFirstIterator(graph, next(iter(nodes))))  # 3.
+        # 4.
+        nodes.difference_update(discovered)
+        comps.append(discovered)
+
+    return comps  # 6.

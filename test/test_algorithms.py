@@ -3,9 +3,10 @@ Tests for algorithm implementations in algorithms module.
 """
 
 import unittest
+import itertools
 
 from al60.data.graphs import DirectedGraph
-from al60.algorithms import post_order, topological_sort
+from al60.algorithms import *
 
 
 class TestGraphAlgorithms(unittest.TestCase):
@@ -35,6 +36,17 @@ class TestGraphAlgorithms(unittest.TestCase):
         self.g2.add_edge('b', 'd')
         self.g2.add_edge('c', 'd')
 
+        self.g3 = UndirectedGraph()
+        self.g3.add_nodes('a', 'b', 'c')
+        self.g3.add_nodes('x', 'y', 'z')
+
+        self.g3.add_edge('a', 'b')
+        self.g3.add_edge('a', 'c')
+        self.g3.add_edge('c', 'b')
+
+        self.g3.add_edge('x', 'y')
+        self.g3.add_edge('y', 'z')
+
     def test_post_order(self):
         self.assertRaises(ValueError, post_order, self.g1, 'fake')
 
@@ -56,3 +68,9 @@ class TestGraphAlgorithms(unittest.TestCase):
             self.assertTrue(g2_order.index(u) < g2_order.index(v))
 
         # TODO: Test key
+
+    def test_count_components(self):
+        self.assertTrue(tuple(components(self.g3)) in
+                        itertools.permutations([{'a', 'b', 'c'},
+                                                {'x', 'y', 'z'}]))
+        # TODO: More tests
