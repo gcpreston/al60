@@ -31,18 +31,35 @@ class GraphIterator(abc.ABC):
         self._worklist = deque([start])
         self._remaining = set(graph.nodes())
 
+    def _next_unvisited(self):
+        """
+        Pop nodes off of the worklist until an unvisited one is found.
+
+        :return: the next unvisited node on the worklist, None if there are no
+            unvisited nodes remaining
+        """
+        already_visited = True
+
+        while already_visited and self._worklist:
+            curr = self._worklist.pop()
+            if curr in self._remaining:
+                return curr
+
+        return None
+
     def __iter__(self):
         return self
 
     def __next__(self):
-        if self._worklist:
-            return self._visit()
+        u = self._next_unvisited()
+        if u:
+            return self._visit(u)
         else:
             raise StopIteration
 
     # TODO: Abstract more code
     @abc.abstractmethod
-    def _visit(self):
+    def _visit(self, u):
         """
         Visit the node on the end of the worklist. Update the worklist with the
         new node(s) to visit and remove newly discovered nodes from remaining.
@@ -57,11 +74,10 @@ class DepthFirstIterator(GraphIterator):
     Iterate over a graph in depth-first order.
     """
 
-    def _visit(self):
-        curr = self._worklist.pop()
-        self._remaining.remove(curr)
+    def _visit(self, u):
+        self._remaining.remove(u)
 
-        neighbors = list(self._graph.neighbors(curr))
+        neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
         # reverse because DFS uses a stack and nodes to be visited last should
         # be put on the bottom
@@ -69,12 +85,10 @@ class DepthFirstIterator(GraphIterator):
 
         for n in neighbors:
             if n in self._remaining:
-                # move n to top of stack
-                if n in self._worklist:
-                    self._worklist.remove(n)
+                # append + pop => stack
                 self._worklist.append(n)
 
-        return curr
+        return u
 
 
 class BreadthFirstIterator(GraphIterator):
@@ -82,17 +96,16 @@ class BreadthFirstIterator(GraphIterator):
     Iterate over a graph in breadth-first order.
     """
 
-    def _visit(self):
-        curr = self._worklist.pop()
-        self._remaining.remove(curr)
+    def _visit(self, u):
+        self._remaining.remove(u)
 
-        neighbors = list(self._graph.neighbors(curr))
+        neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
 
         for n in neighbors:
-            # do not visit later in worklist if already queued
-            if n in self._remaining and n not in self._worklist:
+            if n in self._remaining:
+                # appendleft + pop => queue
                 self._worklist.appendleft(n)
 
-        return curr
+        return u
 
