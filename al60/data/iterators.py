@@ -53,20 +53,22 @@ class GraphIterator(abc.ABC):
     def __next__(self):
         u = self._next_unvisited()
         if u:
-            return self._visit(u)
+            self._remaining.remove(u)
+            self._visit(u)
+            return u
         else:
             raise StopIteration
 
-    # TODO: Abstract more code
     @abc.abstractmethod
     def _visit(self, u):
         """
-        Visit the node on the end of the worklist. Update the worklist with the
-        new node(s) to visit and remove newly discovered nodes from remaining.
+        Visit the given node u. Update the worklist with the new node(s) to
+        visit.
 
-        :return: the next node in the worklist
+        :raises ValueError: if u is not a defined node in this iterator's graph
         """
-        pass
+        if u not in self._graph.nodes():
+            raise ValueError(f'node {u} is not defined')
 
 
 class DepthFirstIterator(GraphIterator):
@@ -75,7 +77,7 @@ class DepthFirstIterator(GraphIterator):
     """
 
     def _visit(self, u):
-        self._remaining.remove(u)
+        super()._visit(u)
 
         neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
@@ -88,8 +90,6 @@ class DepthFirstIterator(GraphIterator):
                 # append + pop => stack
                 self._worklist.append(n)
 
-        return u
-
 
 class BreadthFirstIterator(GraphIterator):
     """
@@ -97,7 +97,7 @@ class BreadthFirstIterator(GraphIterator):
     """
 
     def _visit(self, u):
-        self._remaining.remove(u)
+        super()._visit(u)
 
         neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
@@ -106,6 +106,3 @@ class BreadthFirstIterator(GraphIterator):
             if n in self._remaining:
                 # appendleft + pop => queue
                 self._worklist.appendleft(n)
-
-        return u
-
