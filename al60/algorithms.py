@@ -5,8 +5,10 @@ Various algorithm implementations.
 from al60.data.graphs import Graph, UndirectedGraph
 from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
 
+# TODO: Figure out how to use types module
 
-def post_order(graph: Graph, v):
+
+def post_order(graph: Graph, v) -> list:
     """
     Compute the post-order of the given graph using a depth-first search from v.
     Runs in O(|V| + |E|) time due to DFS.
@@ -24,7 +26,7 @@ def post_order(graph: Graph, v):
     return order
 
 
-def topological_sort(graph: Graph, key=None):
+def topological_sort(graph: Graph, key=None) -> list:
     """
     Topologically sort this graph by repeatedly removing a node with no
     incoming edges and all of its outgoing edges and adding it to the order.
@@ -69,7 +71,7 @@ def topological_sort(graph: Graph, key=None):
     return order
 
 
-def components(graph: UndirectedGraph):
+def components(graph: UndirectedGraph) -> tuple:
     """
     Compute a tuple of sets of nodes that make up connected components in the
     given graph. Implemented as follows:

@@ -60,7 +60,7 @@ class GraphIterator(abc.ABC):
             raise StopIteration
 
     @abc.abstractmethod
-    def _visit(self, u):
+    def _visit(self, u) -> None:
         """
         Visit the given node u. Update the worklist with the new node(s) to
         visit.
@@ -76,7 +76,7 @@ class DepthFirstIterator(GraphIterator):
     Iterate over a graph in depth-first order.
     """
 
-    def _visit(self, u):
+    def _visit(self, u) -> None:
         super()._visit(u)
 
         neighbors = list(self._graph.neighbors(u))
@@ -96,7 +96,7 @@ class BreadthFirstIterator(GraphIterator):
     Iterate over a graph in breadth-first order.
     """
 
-    def _visit(self, u):
+    def _visit(self, u) -> None:
         super()._visit(u)
 
         neighbors = list(self._graph.neighbors(u))
