@@ -5,8 +5,8 @@ Tests for algorithm implementations in algorithms module.
 import unittest
 import itertools
 
-from al60.data.graphs import DirectedGraph
-from al60.algorithms import *
+from al60.data.graphs import Undirected, Graph
+from al60.algorithms import post_order, topological_sort, components
 
 
 class TestGraphAlgorithms(unittest.TestCase):
@@ -15,9 +15,9 @@ class TestGraphAlgorithms(unittest.TestCase):
     """
 
     def setUp(self):
-        self.g_empty = DirectedGraph()
+        self.g_empty = Graph()
 
-        self.g1 = DirectedGraph()
+        self.g1 = Graph()
         self.g1.add_nodes('u', 'a', 'b', 'c', 'x', 'y')
 
         self.g1.add_edge('u', 'a')
@@ -28,7 +28,7 @@ class TestGraphAlgorithms(unittest.TestCase):
         self.g1.add_edge('b', 'u')
         self.g1.add_edge('x', 'y')
 
-        self.g2 = DirectedGraph()
+        self.g2 = Graph()
         self.g2.add_nodes('a', 'b', 'c', 'd')
 
         self.g2.add_edge('a', 'b')
@@ -36,7 +36,7 @@ class TestGraphAlgorithms(unittest.TestCase):
         self.g2.add_edge('b', 'd')
         self.g2.add_edge('c', 'd')
 
-        self.g3 = UndirectedGraph()
+        self.g3 = Undirected(Graph())
         self.g3.add_nodes('a', 'b', 'c')
         self.g3.add_nodes('x', 'y', 'z')
 

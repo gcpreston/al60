@@ -2,30 +2,41 @@
 Module for graph representations.
 """
 
-import abc
+from typing import Hashable, Set, Dict
+from .types import Node, Edge
 
 
-class Graph(abc.ABC):
+class Graph:
     """
-    Abstract base class for a graph relating nodes with edges. Implements code
-    common between all Graph subclasses, which is a directed graph using an
-    adjacency set for edge representation.
+    An unweighted, directed graph relating nodes with edges. This is the most
+    basic graph class. Nodes can be any hashable type.
 
     Please note that in Python, False == 0 and True == 1. Therefore,
     {1}.add(True) remains {1}. This means that if 1 is a defined node, a node
     True cannot be defined, and vice versa. The same goes for 0 and False.
     """
 
-    @abc.abstractmethod
-    def __init__(self):
+    def __init__(self, other: 'Graph' = None):
         """
-        Initialize default instance variables.
-        """
-        self._nodes = set()
-        self._a_in = dict()
-        self._a_out = dict()
+        Initialize a new Graph. Either copy an existing Graph or create an empty
+        one. When copying another graph, the nodes are not deep copied. This
+        means that if other has a node which is an object that is mutated,
+        this mutation will appear in both this Graph and other.
 
-    def nodes(self) -> set:
+        :param other: the Graph to copy
+        """
+        if other:
+            self._nodes: Set[Node] = set(other._nodes)
+            self._a_in: Dict[Node, Set[Node]] =\
+                {u: set(other._a_in[u]) for u in other._a_in}
+            self._a_out: Dict[Node, Set[Node]] =\
+                {u: set(other._a_out[u]) for u in other._a_out}
+        else:
+            self._nodes = set()
+            self._a_in = dict()
+            self._a_out = dict()
+
+    def nodes(self) -> Set[Hashable]:
         """
         Get the set of nodes in this graph.
 
@@ -33,7 +44,7 @@ class Graph(abc.ABC):
         """
         return set(self._nodes)
 
-    def edges(self) -> set:
+    def edges(self) -> Set[Edge]:
         """
         Get the set of edges in this graph, represented as 2-tuples (from_node,
         to_node).
@@ -46,12 +57,12 @@ class Graph(abc.ABC):
                 e.add((u, v))
         return e
 
-    def in_nodes(self, v):
+    def parents(self, v: Node) -> Set[Node]:
         """
-        Get the set of nodes with incoming edges to v.
+        Get the set of nodes which have outgoing edges to v.
 
-        :param v: the node to get the incoming nodes for
-        :return: the incoming nodes of v
+        :param v: the node to get the parents of
+        :return: the parents of v
         :raises ValueError: if v is not a defined node
         """
         if v not in self._nodes:
@@ -59,9 +70,10 @@ class Graph(abc.ABC):
 
         return set(self._a_in[v])
 
-    def neighbors(self, u):
+    # TODO: Change to children?
+    def neighbors(self, u: Node) -> Set[Node]:
         """
-        Get the set of nodes that u has outgoing edges to.
+        Get the set of nodes which u has outgoing edges to.
 
         :param u: the node to get the neighbors of
         :return: the neighbors of u
@@ -72,21 +84,21 @@ class Graph(abc.ABC):
 
         return set(self._a_out[u])
 
-    def add_node(self, name):
+    def add_node(self, node: Node) -> None:
         """
         Add a node to this graph.
 
-        :param name: the name of the node to add
+        :param node: the value to reference this node by
         :raises ValueError: if name is a previously defined node
         """
-        if name in self._nodes:
-            raise ValueError(f'node {name} is already defined')
+        if node in self._nodes:
+            raise ValueError(f'node {node} is already defined')
 
-        self._nodes.add(name)
-        self._a_in[name] = set()
-        self._a_out[name] = set()
+        self._nodes.add(node)
+        self._a_in[node] = set()
+        self._a_out[node] = set()
 
-    def add_nodes(self, *names):
+    def add_nodes(self, *names: Node) -> None:
         """
         Shortcut for adding multiple nodes in one call.
 
@@ -96,7 +108,7 @@ class Graph(abc.ABC):
         for name in names:
             self.add_node(name)
 
-    def add_edge(self, u, v):
+    def add_edge(self, u: Node, v: Node) -> None:
         """
         Add an edge from u to v.
 
@@ -117,55 +129,93 @@ class Graph(abc.ABC):
         self._a_in[v].add(u)
         self._a_out[u].add(v)
 
+    def __eq__(self, other):
+        if isinstance(other, Graph):
+            return (self._nodes == other._nodes and
+                    self._a_in == other._a_in and
+                    self._a_out == other._a_out)
+        else:
+            return False
 
-class DirectedGraph(Graph):
+
+class Undirected(Graph):
     """
-    An unweighted, directed graph. Graph has all the implementation details of a
-    DirectedGraph to reuse in other subclasses. DirectedGraph provides the
-    concrete class name.
+    An undirected graph. Takes an existing Graph object and makes an undirected
+    copy. Please note that in an undirected graph, the edges (u, v) and (v, u)
+    are interchangable. Therefore, if you are checking whether the returned
+    tuple from edges() contains an edge (u, v), you should also check if it
+    contains (v, u). Due to this discrepency between directed and undirected
+    graphs, it is preferrable to use the parents/neighbors methods to check if
+    two nodes are connected.
     """
 
-    def __init__(self):
+    def __init__(self, graph: Graph):
         """
-        Initialize a new DirectedGraph.
+        Initialize a new Undirected.
+
+        :param graph: the Graph to make an undirected version of
         """
-        super().__init__()
+        super().__init__(graph)
+
+    def parents(self, v: Node) -> Set[Node]:
+        """
+        Get the set of nodes which have outgoing edges to v. For an undirected
+        graph, this is the same set that neighbors(v) provides.
+
+        :param v: the node to get the parents of
+        :return: the parents of v
+        :raises ValueError: if v is not a defined node
+        """
+        return super().parents(v).union(self._a_out[v])
+
+    def neighbors(self, u: Node) -> Set[Node]:
+        """
+        Get the set of nodes which u has outgoing edges to. For an undirected
+        graph, this is the same set that parents(u) provides.
+
+        :param u: the node to get the neighbors of
+        :return: the neighbors of u
+        :raises ValueError: if u is not a defined node
+        """
+        return super().neighbors(u).union(self._a_in[u])
+
+    def __eq__(self, other):
+        if isinstance(other, Undirected):
+            if self._nodes == other._nodes:
+                for u in self._nodes:
+                    if self.neighbors(u) != other.neighbors(u):
+                        return False
+                # all the same nodes which have all the same neighbors
+                return True
+        # not Undirected or different nodes
+        return False
 
 
-class UndirectedGraph(Graph):
+class Weighted(Graph):
     """
-    An unweighted, undirected graph.
+    A weighted graph. Takes an existing Graph object and adds a default weight
+    to each existing edge.
     """
 
-    def __init__(self):
+    def __init__(self, graph: Graph, default_weight: float = 1):
         """
-        Initialize a new UndirectedGraph.
-        """
-        super().__init__()
+        Initialize a new Weighted.
 
-    def edges(self):
+        :param graph: the Graph to make a weighted version of
         """
-        Get a set of edges in this graph, represented as 2-tuples (u, v) where
-        u and v are defined nodes. Please that in an undirected graph, (u, v)
-        == (v, u).
+        super().__init__(graph)
+        self._weights: Dict[Edge, float] =\
+            {key: default_weight for key in graph.edges()}
 
-        :return: a set of defined edges
+    def add_edge(self, u: Node, v: Node, weight: float = 1):
         """
-        e = set()
-        for u in self._nodes:
-            for v in self._a_out[u]:
-                if (v, u) not in e:
-                    e.add((u, v))
-        return e
+        Add an edge from u to v with the specified weight.
 
-    def add_edge(self, u, v):
-        """
-        Add an edge between u and v.
-
-        :param u: the first node
-        :param v: the second node
-        :raises ValueError: if u or v is not a defined node or there already
-            exists an edge between u and v
+        :param u: the 'from' node
+        :param v: the 'to' node
+        :param weight: the weight of the edge
+        :raises ValueError: if u or v is not a defined node or (u, v) is a
+            previously defined edge
         """
         super().add_edge(u, v)
-        super().add_edge(v, u)
+        self._weights[(u, v)] = weight

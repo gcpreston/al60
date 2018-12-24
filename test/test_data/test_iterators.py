@@ -4,7 +4,7 @@ Tests for iterators defined in data.iterators.
 
 import unittest
 
-from al60.data.graphs import DirectedGraph, UndirectedGraph
+from al60.data.graphs import Graph, Undirected
 from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
 
 
@@ -14,7 +14,7 @@ class TestDepthFirstIterator(unittest.TestCase):
     """
 
     def setUp(self):
-        self.g1 = DirectedGraph()
+        self.g1 = Graph()
         self.g1.add_nodes('u', 'a', 'b', 'c')
         self.g1.add_nodes('x', 'y')
         self.g1.add_edge('u', 'a')
@@ -25,7 +25,7 @@ class TestDepthFirstIterator(unittest.TestCase):
         self.g1.add_edge('b', 'u')
         self.g1.add_edge('x', 'y')
 
-        self.g2 = UndirectedGraph()
+        self.g2 = Graph()
         self.g2.add_nodes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 's')
         self.g2.add_edge('a', 'b')
         self.g2.add_edge('a', 's')
@@ -64,7 +64,7 @@ class TestBreadthFirstIterator(unittest.TestCase):
     """
 
     def setUp(self):
-        self.g1 = DirectedGraph()
+        self.g1 = Graph()
         self.g1.add_nodes('u', 'a', 'b', 'c')
         self.g1.add_nodes('x', 'y')
         self.g1.add_edge('u', 'a')
@@ -75,7 +75,7 @@ class TestBreadthFirstIterator(unittest.TestCase):
         self.g1.add_edge('b', 'u')
         self.g1.add_edge('x', 'y')
 
-        self.g2 = UndirectedGraph()
+        self.g2 = Undirected(Graph())
         self.g2.add_nodes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 's')
         self.g2.add_edge('a', 'b')
         self.g2.add_edge('a', 's')

@@ -4,6 +4,7 @@ Various iterators over defined data structures.
 
 import abc
 
+from typing import Hashable, Iterable, Optional
 from collections import deque
 from .graphs import Graph
 
@@ -31,7 +32,7 @@ class GraphIterator(abc.ABC):
         self._worklist = deque([start])
         self._remaining = set(graph.nodes())
 
-    def _next_unvisited(self):
+    def _next_unvisited(self) -> Optional[Hashable]:
         """
         Pop nodes off of the worklist until an unvisited one is found.
 
@@ -47,10 +48,10 @@ class GraphIterator(abc.ABC):
 
         return None
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Hashable]:
         return self
 
-    def __next__(self):
+    def __next__(self) -> Hashable:
         u = self._next_unvisited()
         if u:
             self._remaining.remove(u)

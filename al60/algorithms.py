@@ -2,21 +2,21 @@
 Various algorithm implementations.
 """
 
-from al60.data.graphs import Graph, UndirectedGraph
+from typing import Hashable, List, Tuple, Set, Callable
+from .data.types import Node
+from al60.data.graphs import Graph, Undirected
 from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
 
-# TODO: Figure out how to use types module
 
-
-def post_order(graph: Graph, v) -> list:
+def post_order(graph: Graph, v: Node) -> List[Node]:
     """
     Compute the post-order of the given graph using a depth-first search from v.
-    Runs in O(|V| + |E|) time due to DFS.
+    Total runtime: O(|V| + |E|) time due to DFS.
 
     :param graph: the graph to operate on
     :param v: the node to search from
     :return: a list of nodes in the order they were done being processed
-    :raises ValueError: if v is not a defined node
+    :raises ValueError: if v is not a defined node in graph
     """
     if v not in graph.nodes():
         raise ValueError(f'node {v} is not defined')
@@ -26,10 +26,14 @@ def post_order(graph: Graph, v) -> list:
     return order
 
 
-def topological_sort(graph: Graph, key=None) -> list:
+# TODO: Fix key type
+def topological_sort(graph: Graph, key: Callable[[Node], int] = None)\
+        -> List[Node]:
     """
     Topologically sort this graph by repeatedly removing a node with no
     incoming edges and all of its outgoing edges and adding it to the order.
+    Total runtime: O(|E|) + O(|V|) + O(|V|) = O(|V| + |E|).
+    TODO: Check total runtime
 
     https://courses.cs.washington.edu/courses/cse326/03wi/lectures/RaoLect20.pdf
 
@@ -43,7 +47,7 @@ def topological_sort(graph: Graph, key=None) -> list:
     # TODO: Implement using priority queue
 
     # the number of incoming edges for each node: O(|E|)
-    in_degrees = {v: len(graph.in_nodes(v)) for v in graph.nodes()}
+    in_degrees = {v: len(graph.parents(v)) for v in graph.nodes()}
     # the nodes ready to be removed: O(|V|)
     ready = [v for v in graph.nodes() if in_degrees[v] == 0]
     # the topological ordering
@@ -71,18 +75,20 @@ def topological_sort(graph: Graph, key=None) -> list:
     return order
 
 
-def components(graph: UndirectedGraph) -> tuple:
+def components(graph: Undirected) -> Tuple[Set[Node]]:
     """
     Compute a tuple of sets of nodes that make up connected components in the
     given graph. Implemented as follows:
 
-    1. Create a set containing the nodes of the graph.
-    2. Create an empty list.
-    3. Perform a breadth-first search from any node in the set: O(|V| + |E|)
+    1. Create a set containing the nodes of the graph: O(|V|).
+    2. Create an empty list: O(1).
+    3. Perform a breadth-first search from any node in the set: O(|V| + |E|).
     4. Remove the discovered nodes from the set and add them to the list as a
-       new set.
-    5. Repeat until the set is empty.
+       new set: O(|V|) + O(|V|).
+    5. Repeat until the set is empty: O(|V|).
     6. Convert the list to a tuple and return it.
+
+    TODO: Calculate total runtime (3. and 5. are not necessarily multiplied)
 
     :param graph: the undirected graph to operate on
     :return: a tuple of connected components
@@ -91,7 +97,9 @@ def components(graph: UndirectedGraph) -> tuple:
     comps = []  # 2.
 
     while nodes:  # 5.
-        discovered = set(BreadthFirstIterator(graph, next(iter(nodes))))  # 3.
+        # 3.
+        discovered: Set[Hashable] = set(
+            BreadthFirstIterator(graph, next(iter(nodes))))
         # 4.
         nodes.difference_update(discovered)
         comps.append(discovered)
