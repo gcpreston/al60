@@ -25,7 +25,7 @@ class TestDepthFirstIterator(unittest.TestCase):
         self.g1.add_edge('b', 'u')
         self.g1.add_edge('x', 'y')
 
-        self.g2 = Graph()
+        self.g2 = Undirected(Graph())
         self.g2.add_nodes('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 's')
         self.g2.add_edge('a', 'b')
         self.g2.add_edge('a', 's')

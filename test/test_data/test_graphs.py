@@ -76,6 +76,22 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(self.g1, g1_copy)
         self.assertFalse(self.g1 is g1_copy)
 
+    def test_parents(self):
+        self.assertEqual({'a', 'b'}, self.g1.parents('u'))
+        self.assertEqual({'u', 'c'}, self.g1.parents('a'))
+        self.assertEqual({'c'}, self.g1.parents('b'))
+        self.assertEqual({'u'}, self.g1.parents('c'))
+        self.assertEqual(set(), self.g1.parents('x'))
+        self.assertEqual({'x'}, self.g1.parents('y'))
+
+    def test_neighbors(self):
+        self.assertEqual({'a', 'c'}, self.g1.neighbors('u'))
+        self.assertEqual({'u'}, self.g1.neighbors('a'))
+        self.assertEqual({'u'}, self.g1.neighbors('b'))
+        self.assertEqual({'a', 'b'}, self.g1.neighbors('c'))
+        self.assertEqual({'y'}, self.g1.neighbors('x'))
+        self.assertEqual(set(), self.g1.neighbors('y'))
+
     def test_add_node(self):
         self.g_empty.add_node(5)
         self.g_empty.add_node('hello')
@@ -111,21 +127,20 @@ class TestGraph(unittest.TestCase):
     def test_add_edge_undefined_node(self):
         self.assertRaises(ValueError, self.g_empty.add_edge, 'hello', 'world')
 
-    def test_parents(self):
-        self.assertEqual({'a', 'b'}, self.g1.parents('u'))
-        self.assertEqual({'u', 'c'}, self.g1.parents('a'))
-        self.assertEqual({'c'}, self.g1.parents('b'))
-        self.assertEqual({'u'}, self.g1.parents('c'))
-        self.assertEqual(set(), self.g1.parents('x'))
-        self.assertEqual({'x'}, self.g1.parents('y'))
+    def test_remove_node(self):
+        self.g1.remove_node('x')
 
-    def test_neighbors(self):
-        self.assertEqual({'a', 'c'}, self.g1.neighbors('u'))
-        self.assertEqual({'u'}, self.g1.neighbors('a'))
-        self.assertEqual({'u'}, self.g1.neighbors('b'))
-        self.assertEqual({'a', 'b'}, self.g1.neighbors('c'))
-        self.assertEqual({'y'}, self.g1.neighbors('x'))
-        self.assertEqual(set(), self.g1.neighbors('y'))
+        self.assertEqual({'u', 'a', 'b', 'c', 'y'}, self.g1.nodes())
+        self.assertRaises(ValueError, self.g1.remove_node, 'z')
+
+    def test_remove_edge(self):
+        before = self.g1.edges()
+        self.g1.remove_edge('a', 'u')
+        after = self.g1.edges()
+
+        # reverse edge ('u', 'a') still remains
+        self.assertEqual(after, before.difference({('a', 'u')}))
+        self.assertRaises(ValueError, self.g1.remove_edge, 'u', 'x')
 
 
 class TestUndirectedGraph(unittest.TestCase):
@@ -144,6 +159,7 @@ class TestUndirectedGraph(unittest.TestCase):
         self.g_directed.add_edge(1, 2)
         self.g_directed.add_edge(1, 3)
         self.g_directed.add_edge(3, 2)
+        self.g_directed.add_edge(2, 3)
         self.g_directed.add_edge(3, 4)
         self.g_directed.add_edge(4, 3)
 
@@ -187,6 +203,15 @@ class TestUndirectedGraph(unittest.TestCase):
 
         self.assertEqual(self.g2, double_g_directed)
         self.assertEqual(self.g2, double_g2)
+
+    def test_remove_edge(self):
+        before = self.g2.edges()
+        self.g2.remove_edge(2, 3)
+        after = self.g2.edges()
+
+        # both edges existed in directed graph, both are removed
+        self.assertEqual(after, before.difference({(2, 3), (3, 2)}))
+        self.assertRaises(ValueError, self.g2.remove_edge, 1, 5)
 
     # TODO: Write more tests for undirected graph
 
