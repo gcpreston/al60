@@ -5,7 +5,7 @@ Tests for iterators defined in data.iterators.
 import unittest
 
 from al60.data.graphs import Graph, Undirected
-from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
+from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator, DijkstraIterator
 
 
 class TestDepthFirstIterator(unittest.TestCase):
@@ -108,3 +108,25 @@ class TestBreadthFirstIterator(unittest.TestCase):
 
         self.assertEqual(['u', 'c', 'a', 'b'], g1_u)
         self.assertEqual(['a', 's', 'b', 'g', 'c', 'h', 'f', 'e', 'd'], g2_a)
+
+
+class TestDijkstraIterator(unittest.TestCase):
+
+    def setUp(self):
+        self.g1 = Graph()
+        self.g1.add_nodes('a', 'b', 'c', 'd', 'e')
+        self.g1.add_edge('a', 'b', weight=10)
+        self.g1.add_edge('a', 'c', weight=3)
+        self.g1.add_edge('b', 'c', weight=1)
+        self.g1.add_edge('b', 'd', weight=2)
+        self.g1.add_edge('c', 'b', weight=4)
+        self.g1.add_edge('c', 'd', weight=8)
+        self.g1.add_edge('c', 'e', weight=2)
+        self.g1.add_edge('d', 'e', weight=7)
+        self.g1.add_edge('e', 'd', weight=9)
+
+    def test_iterator(self):
+        g1_a = list(DijkstraIterator(self.g1, 'a'))
+
+        self.assertEqual(['a', 'c', 'e', 'b', 'd'], g1_a)
+

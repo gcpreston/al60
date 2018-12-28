@@ -3,9 +3,13 @@ Various iterators over defined data structures.
 """
 
 import abc
+import math
 
-from typing import Hashable, Iterable, Optional
+from typing import Iterable, Optional
 from collections import deque
+from heapdict import heapdict
+
+from .types import Node
 from .graphs import Graph
 
 
@@ -29,10 +33,10 @@ class GraphIterator(abc.ABC):
 
         self._graph = graph
         self._key = key
-        self._worklist = deque([start])
+        self._worklist = deque([start])  # TODO: Default -> priority queue?
         self._remaining = set(graph.nodes())
 
-    def _next_unvisited(self) -> Optional[Hashable]:
+    def _next_unvisited(self) -> Optional[Node]:
         """
         Pop nodes off of the worklist until an unvisited one is found.
 
@@ -48,28 +52,26 @@ class GraphIterator(abc.ABC):
 
         return None
 
-    def __iter__(self) -> Iterable[Hashable]:
+    def __iter__(self) -> Iterable[Node]:
         return self
 
-    def __next__(self) -> Hashable:
-        u = self._next_unvisited()
+    def __next__(self) -> Node:
+        u = self._visit_next()
         if u:
             self._remaining.remove(u)
-            self._visit(u)
             return u
         else:
             raise StopIteration
 
     @abc.abstractmethod
-    def _visit(self, u) -> None:
+    def _visit_next(self) -> Optional[Node]:
         """
-        Visit the given node u. Update the worklist with the new node(s) to
-        visit.
+        Visit the next unvisited node. Update the worklist with the new node(s)
+        to visit.
 
-        :raises ValueError: if u is not a defined node in this iterator's graph
+        :return: the node that was visited, None if no unvisited nodes remain
         """
-        if u not in self._graph.nodes():
-            raise ValueError(f'node {u} is not defined')
+        pass
 
 
 class DepthFirstIterator(GraphIterator):
@@ -77,19 +79,24 @@ class DepthFirstIterator(GraphIterator):
     Iterate over a graph in depth-first order.
     """
 
-    def _visit(self, u) -> None:
-        super()._visit(u)
+    def _visit_next(self) -> Optional[Node]:
+        u = self._next_unvisited()
 
-        neighbors = list(self._graph.neighbors(u))
-        neighbors.sort(key=self._key)
-        # reverse because DFS uses a stack and nodes to be visited last should
-        # be put on the bottom
-        neighbors.reverse()
+        if u:
+            neighbors = list(self._graph.neighbors(u))
+            neighbors.sort(key=self._key)
+            # reverse because DFS uses a stack and nodes to be visited last
+            # should be put on the bottom
+            neighbors.reverse()
 
-        for n in neighbors:
-            if n in self._remaining:
-                # append + pop => stack
-                self._worklist.append(n)
+            for v in neighbors:
+                if v in self._remaining:
+                    # append + pop => stack
+                    self._worklist.append(v)
+
+            return u
+        else:
+            return None
 
 
 class BreadthFirstIterator(GraphIterator):
@@ -97,13 +104,60 @@ class BreadthFirstIterator(GraphIterator):
     Iterate over a graph in breadth-first order.
     """
 
-    def _visit(self, u) -> None:
-        super()._visit(u)
+    def _visit_next(self) -> Optional[Node]:
+        u = self._next_unvisited()
+
+        if u:
+            neighbors = list(self._graph.neighbors(u))
+            neighbors.sort(key=self._key)
+
+            for v in neighbors:
+                if v in self._remaining:
+                    # appendleft + pop => queue
+                    self._worklist.appendleft(v)
+
+            return u
+        else:
+            return None
+
+
+class DijkstraIterator(GraphIterator):
+    """
+    Iterate over a graph according to Dijkstra's shortest path algorithm.
+    """
+
+    def __init__(self, graph: Graph, start, key=None):
+        """
+        Create a new DepthFirstIterator object.
+
+        :param graph: the graph to iterate over
+        :param start: the first node to visit
+        :param key: a function of one argument used to extract a comparison key
+            to determine which node to visit first (the "smallest" element)
+        :raises ValueError: if start is not defined in graph
+        """
+        super().__init__(graph, start, key=key)
+
+        self._worklist = heapdict()
+        for u in graph.nodes():
+            self._worklist[u] = math.inf
+        self._worklist[start] = 0
+
+    def _visit_next(self) -> Optional[Node]:
+        try:
+            (u, d_u) = self._worklist.popitem()
+        except IndexError:
+            return None
 
         neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
 
-        for n in neighbors:
-            if n in self._remaining:
-                # appendleft + pop => queue
-                self._worklist.appendleft(n)
+        for v in neighbors:
+            if v in self._worklist:
+                d_v = self._worklist[v]
+                l_uv = self._graph.weight(u, v)
+
+                if d_v > d_u + l_uv:
+                    self._worklist[v] = d_u + l_uv
+
+        return u

@@ -64,6 +64,24 @@ class Graph:
                 e.add((u, v))
         return e
 
+    def weight(self, u: Node, v: Node) -> float:
+        """
+        Get the weight of the edge (u, v).
+
+        :param u: the 'from' node
+        :param v: the 'to' node
+        :return: the weight of edge (u, v)
+        :raises ValueError: if (u, v) is not an existing edge
+        """
+        # add quotes to str if needed
+        su = f"'{u}'" if isinstance(u, str) else u
+        sv = f"'{v}'" if isinstance(v, str) else v
+
+        if v not in self._a_out[u]:
+            raise ValueError(f'invalid edge ({su}, {sv})')
+
+        return self._weights[(u, v)]
+
     def parents(self, v: Node) -> Set[Node]:
         """
         Get the set of nodes which have outgoing edges to v.
@@ -201,6 +219,8 @@ class Undirected(Graph):
         :param graph: the Graph to make an undirected version of
         """
         super().__init__(graph)
+
+    # TODO: Override weight method
 
     def parents(self, v: Node) -> Set[Node]:
         """
