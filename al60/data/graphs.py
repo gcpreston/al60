@@ -28,7 +28,7 @@ class Graph:
         means that if other has a node which is an object that is mutated,
         this mutation will appear in both this Graph and other.
 
-        :param other: the Graph to copy
+        :param other: a Graph to copy
         :param default_weight: the weight to give new edges if unspecified
         """
         if other:
@@ -81,7 +81,8 @@ class Graph:
 
         # could also be u not in self._a_in[v] due to invariant 1
         if v not in self._a_out[u]:
-            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
+            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
+                             f'is not defined')
 
     def _verify_edge_undefined(self, u: Node, v: Node) -> None:
         """
@@ -266,7 +267,21 @@ class Undirected(Graph):
         """
         super().__init__(graph)
 
-    # TODO: Override weight method
+    def weight(self, u: Node, v: Node) -> float:
+        """
+        Get the weight of the edge (u, v)/(v, u).
+
+        :param u: the first node
+        :param v: the second node
+        :return: the weight of edge
+        :raises ValueError: if (u, v)/(v, u) is not an existing edge
+        """
+        if v not in self.neighbors(u):
+            raise ValueError(f'edge ({_quoted(u), _quoted(v)})'
+                             f'is not defined')
+
+        uv = self._weights[(u, v)]
+        return uv if uv else self._weights[(v, u)]
 
     def parents(self, v: Node) -> Set[Node]:
         """
@@ -292,14 +307,14 @@ class Undirected(Graph):
 
     def add_edge(self, u: Node, v: Node, weight: float = None) -> None:
         """
-        Add an edge from u to v. In an undirected graph, will not allow (v, u)
-        to be added if edge (u, v) is already defined.
+        Add an edge between u and v. In an undirected graph, will not allow
+        (v, u) to be added if edge (u, v) is already defined.
 
-        :param u: the 'from' node
-        :param v: the 'to' node
+        :param u: the first node
+        :param v: the second node
         :param weight: the weight of the edge
-        :raises ValueError: if u or v is not a defined node or (u, v) is a
-            previously defined edge
+        :raises ValueError: if u or v is not a defined node or (u, v)/(v, u) is
+            a previously defined edge
         """
         self._verify_node_defined(u)
         self._verify_node_defined(v)

@@ -201,9 +201,6 @@ class TestUndirectedGraph(unittest.TestCase):
 
         self.g2 = Undirected(self.g_directed)
 
-    def test_add_edge_defined_edge(self):
-        self.assertRaises(ValueError, self.g1.add_edge, 'b', 'a')
-
     def test_parents(self):
         self.assertEqual({'b'}, self.g1.parents('a'))
         self.assertEqual({'a', 'c'}, self.g1.parents('b'))
@@ -220,6 +217,9 @@ class TestUndirectedGraph(unittest.TestCase):
 
         self.assertEqual(self.g2, double_g_directed)
         self.assertEqual(self.g2, double_g2)
+
+    def test_add_edge_defined_edge(self):
+        self.assertRaises(ValueError, self.g1.add_edge, 'b', 'a')
 
     def test_remove_edge(self):
         before = self.g2.edges()
