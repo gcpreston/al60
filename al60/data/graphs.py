@@ -246,7 +246,9 @@ class Graph:
 class Undirected(Graph):
     """
     An undirected graph. Takes an existing Graph object and makes an undirected
-    copy. Please note that in an undirected graph, the edges (u, v) and (v, u)
+    copy.
+
+    Please note that in an undirected graph, the edges (u, v) and (v, u)
     are interchangable. Therefore, if you are checking whether the returned
     tuple from edges() contains an edge (u, v), you should also check if it
     contains (v, u). Due to this discrepency between directed and undirected
@@ -254,6 +256,8 @@ class Undirected(Graph):
     two nodes are connected.
     """
 
+    # TODO: Get rid of reverse directed edges? How to handle edge weights?
+    # TODO: Make graph optional?
     def __init__(self, graph: Graph):
         """
         Initialize a new Undirected.
@@ -285,6 +289,24 @@ class Undirected(Graph):
         :raises ValueError: if u is not a defined node
         """
         return super().neighbors(u).union(self._a_in[u])
+
+    def add_edge(self, u: Node, v: Node, weight: float = None) -> None:
+        """
+        Add an edge from u to v. In an undirected graph, will not allow (v, u)
+        to be added if edge (u, v) is already defined.
+
+        :param u: the 'from' node
+        :param v: the 'to' node
+        :param weight: the weight of the edge
+        :raises ValueError: if u or v is not a defined node or (u, v) is a
+            previously defined edge
+        """
+        self._verify_node_defined(u)
+        self._verify_node_defined(v)
+        self._verify_edge_undefined(v, u)
+        # (u, v) verified in super call
+
+        super().add_edge(u, v, weight)
 
     def remove_edge(self, u: Node, v: Node) -> None:
         """

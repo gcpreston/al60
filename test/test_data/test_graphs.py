@@ -201,27 +201,8 @@ class TestUndirectedGraph(unittest.TestCase):
 
         self.g2 = Undirected(self.g_directed)
 
-    def test_eq_directed_edges(self):
-        # it is implied that these directed edges exists already in self.g2
-        self.g_directed.add_edge(2, 1)
-        self.g_directed.add_edge(3, 1)
-        g2_test1 = Undirected(self.g_directed)
-
-        self.assertEqual(self.g2, g2_test1)
-
-    def test_eq_new_edge(self):
-        # connecting previously disconnected nodes should make them different
-        self.g_directed.add_edge(4, 5)
-        g2_test2 = Undirected(self.g_directed)
-
-        self.assertNotEqual(self.g2, g2_test2)
-
-    def test_eq_new_node(self):
-        # a new node should make them different
-        self.g_directed.add_node(6)
-        g2_test3 = Undirected(self.g_directed)
-
-        self.assertNotEqual(self.g2, g2_test3)
+    def test_add_edge_defined_edge(self):
+        self.assertRaises(ValueError, self.g1.add_edge, 'b', 'a')
 
     def test_parents(self):
         self.assertEqual({'b'}, self.g1.parents('a'))
@@ -248,6 +229,28 @@ class TestUndirectedGraph(unittest.TestCase):
         # both edges existed in directed graph, both are removed
         self.assertEqual(after, before.difference({(2, 3), (3, 2)}))
         self.assertRaises(ValueError, self.g2.remove_edge, 1, 5)
+
+    def test_eq_directed_edges(self):
+        # it is implied that these directed edges exists already in self.g2
+        self.g_directed.add_edge(2, 1)
+        self.g_directed.add_edge(3, 1)
+        g2_test1 = Undirected(self.g_directed)
+
+        self.assertEqual(self.g2, g2_test1)
+
+    def test_eq_new_edge(self):
+        # connecting previously disconnected nodes should make them different
+        self.g_directed.add_edge(4, 5)
+        g2_test2 = Undirected(self.g_directed)
+
+        self.assertNotEqual(self.g2, g2_test2)
+
+    def test_eq_new_node(self):
+        # a new node should make them different
+        self.g_directed.add_node(6)
+        g2_test3 = Undirected(self.g_directed)
+
+        self.assertNotEqual(self.g2, g2_test3)
 
     # TODO: Write more tests for undirected graph
 
