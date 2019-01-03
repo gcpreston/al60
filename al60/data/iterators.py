@@ -5,7 +5,7 @@ Various iterators over defined data structures.
 import abc
 import math
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Tuple
 from collections import deque
 from heapdict import HeapDict
 
@@ -121,19 +121,49 @@ class BreadthFirstIterator(GraphIterator):
             return None
 
 
-class DijkstraIterator(GraphIterator):
+class WeightedGraphIterator(GraphIterator):
     """
-    Iterate over a graph according to Dijkstra's shortest path algorithm.
+    Abstract base class for graph iterators that include edge weight data. The
+    difference between this class and GraphIterator is the signature of
+    __next__, where GraphIterator simply returns a node, but
+    WeightedGraphIterator returns a (node, weight) tuple.
+    """
+
+    def __next__(self) -> Tuple[Node, float]:
+        (u, weight) = self._visit_next()
+        if u:
+            self._remaining.remove(u)
+            return u, weight
+        else:
+            raise StopIteration
+
+    @abc.abstractmethod
+    def _visit_next(self) -> Tuple[Optional[Node], float]:
+        """
+        Visit the next unvisited node. Update the worklist with the new node(s)
+        to visit.
+
+        :return: a tuple of the node that was visited and its distance from
+            the start node, (None, 0) if no unvisited nodes remain
+        """
+        pass
+
+
+class DijkstraIterator(WeightedGraphIterator):
+    """
+    Iterate over the nodes of a graph based on their distance from the given
+    start node using Dijkstra's shortest path algorithm.
     """
 
     def __init__(self, graph: Graph, start, key=None):
         """
-        Create a new DepthFirstIterator object.
+        Create a new DijkstraIterator object.
 
         :param graph: the graph to iterate over
         :param start: the first node to visit
         :param key: a function of one argument used to extract a comparison key
-            to determine which node to visit first (the "smallest" element)
+            to determine which node to visit first in the case of a tie (the
+            "smallest" element)
         :raises ValueError: if start is not defined in graph
         """
         super().__init__(graph, start, key=key)
@@ -149,7 +179,7 @@ class DijkstraIterator(GraphIterator):
         try:
             (u, d_u) = self._worklist.popitem()
         except KeyError:
-            return None
+            return None, 0
 
         neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
@@ -162,4 +192,4 @@ class DijkstraIterator(GraphIterator):
                 if d_v > d_u + l_uv:
                     self._worklist[v] = d_u + l_uv
 
-        return u
+        return u, d_u

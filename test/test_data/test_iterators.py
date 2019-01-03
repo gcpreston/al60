@@ -128,5 +128,6 @@ class TestDijkstraIterator(unittest.TestCase):
     def test_iterator(self):
         g1_a = list(DijkstraIterator(self.g1, 'a'))
 
-        self.assertEqual(['a', 'c', 'e', 'b', 'd'], g1_a)
+        self.assertEqual([('a', 0), ('c', 3), ('e', 5), ('b', 7), ('d', 9)],
+                         g1_a)
 
