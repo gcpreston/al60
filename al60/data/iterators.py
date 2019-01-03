@@ -144,7 +144,7 @@ class WeightedGraphIterator(GraphIterator):
         to visit.
 
         :return: a tuple of the node that was visited and its distance from
-            the start node, (None, 0) if no unvisited nodes remain
+            the start node, (None, math.inf) if no unvisited nodes remain
         """
         pass
 
@@ -179,7 +179,7 @@ class DijkstraIterator(WeightedGraphIterator):
         try:
             (u, d_u) = self._worklist.popitem()
         except KeyError:
-            return None, 0
+            return None, math.inf
 
         neighbors = list(self._graph.neighbors(u))
         neighbors.sort(key=self._key)
