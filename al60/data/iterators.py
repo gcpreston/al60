@@ -173,8 +173,6 @@ class DijkstraIterator(WeightedGraphIterator):
             self._worklist[u] = math.inf
         self._worklist[start] = 0
 
-    # TODO: Give distance information in iterable
-
     def _visit_next(self) -> Optional[Node]:
         try:
             (u, d_u) = self._worklist.popitem()

@@ -16,6 +16,9 @@ class Graph:
     Please note that in Python, False == 0 and True == 1. Therefore,
     {1}.add(True) remains {1}. This means that if 1 is a defined node, a node
     True cannot be defined, and vice versa. The same goes for 0 and False.
+
+    INVARIANTS:
+    1. v in self._a_out[u] <=> u in self._a_in[v]
     """
 
     def __init__(self, other: 'Graph' = None, default_weight: float = 1):
@@ -42,6 +45,60 @@ class Graph:
             self._a_out: Dict[Node, Set[Node]] = dict()
             self._weights: Dict[Edge, float] = dict()
         self._default_weight = default_weight
+
+    def _verify_node_defined(self, u: Node) -> None:
+        """
+        Ensure that u is a defined node in this Graph.
+
+        :param u: the node to check
+        :raises ValueError: if u is not a defined node
+        """
+        if u not in self._nodes:
+            raise ValueError(f'node {_quoted(u)} is not defined')
+
+    def _verify_node_undefined(self, u: Node) -> None:
+        """
+        Ensure that u is not a defined not in this Graph.
+
+        :param u: the node to check
+        :raises ValueError: if u is a defined node
+        """
+        if u in self._nodes:
+            raise ValueError(f'node {_quoted(u)} is already defined')
+
+    def _verify_edge_defined(self, u: Node, v: Node) -> None:
+        """
+        Ensure that (u, v) is a defined edge in this Graph. Implicitly verifies
+        if u and v are defined nodes in this Graph.
+
+        :param u: the 'from' node of the edge to check
+        :param v: the 'to' node of the edge to check
+        :raises ValueError: if (u, v) is not a defined edge
+        """
+        # TODO: Create _verify_nodes_defined(u*)
+        self._verify_node_defined(u)
+        self._verify_node_defined(v)
+
+        # could also be u not in self._a_in[v] due to invariant 1
+        if v not in self._a_out[u]:
+            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
+
+    def _verify_edge_undefined(self, u: Node, v: Node) -> None:
+        """
+        Ensure that (u, v) is not a defined edge in this Graph.
+
+        :param u: the 'from' node of the edge to check
+        :param v: the 'to' node of the edge to check
+        :raises ValueError: if (u, v) is a defined edge
+        """
+        try:
+            # could also be u in self._a_in[v] due to invariant 1
+            if v in self._a_out[u]:
+                raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
+                                 f'is already defined')
+        except KeyError:
+            # u is not a defined node, edge does not exist
+            pass
 
     def nodes(self) -> Set[Node]:
         """
@@ -73,9 +130,7 @@ class Graph:
         :return: the weight of edge (u, v)
         :raises ValueError: if (u, v) is not an existing edge
         """
-        if v not in self._a_out[u]:
-            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
-
+        self._verify_edge_defined(u, v)
         return self._weights[(u, v)]
 
     def parents(self, v: Node) -> Set[Node]:
@@ -86,9 +141,7 @@ class Graph:
         :return: the parents of v
         :raises ValueError: if v is not a defined node
         """
-        if v not in self._nodes:
-            raise ValueError(f'node {v} is not defined')
-
+        self._verify_node_defined(v)
         return set(self._a_in[v])
 
     # TODO: Change to children?
@@ -100,9 +153,7 @@ class Graph:
         :return: the neighbors of u
         :raises ValueError: if u is not a defined node
         """
-        if u not in self._nodes:
-            raise ValueError(f'node {u} is not defined')
-
+        self._verify_node_defined(u)
         return set(self._a_out[u])
 
     def add_node(self, node: Node) -> None:
@@ -112,21 +163,27 @@ class Graph:
         :param node: the value to reference this node by
         :raises ValueError: if name is a previously defined node
         """
-        if node in self._nodes:
-            raise ValueError(f'node {node} is already defined')
+        self._verify_node_undefined(node)
 
         self._nodes.add(node)
         self._a_in[node] = set()
         self._a_out[node] = set()
 
-    def add_nodes(self, *names: Node) -> None:
+    def add_nodes(self, *nodes: Node) -> None:
         """
-        Shortcut for adding multiple nodes in one call.
+        Shortcut for adding multiple nodes in one call. If any name is
+        previously defined, an exception should be raised without adding any
+        new nodes.
 
-        :param names: the names of the nodes to add
+        :param nodes: the values to add as nodes
         :raises ValueError: if any name is a previously defined node
         """
-        for name in names:
+        # TODO: Replace with some _verify method
+        prev = set(nodes).intersection(self.nodes())
+        if prev:
+            raise ValueError(f'nodes {prev} are already defined')
+
+        for name in nodes:
             self.add_node(name)
 
     def add_edge(self, u: Node, v: Node, weight: float = None) -> None:
@@ -139,11 +196,9 @@ class Graph:
         :raises ValueError: if u or v is not a defined node or (u, v) is a
             previously defined edge
         """
-        if not (u in self._nodes and v in self._nodes):
-            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
-        if v in self._a_out[u]:
-            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
-                             f'is already defined')
+        self._verify_node_defined(u)
+        self._verify_node_defined(v)
+        self._verify_edge_undefined(u, v)
 
         self._a_in[v].add(u)
         self._a_out[u].add(v)
@@ -160,8 +215,7 @@ class Graph:
         :param u: the node to remove
         :raises ValueError: if u is not a defined node
         """
-        if u not in self._nodes:
-            raise ValueError(f'node {u} is not defined')
+        self._verify_node_defined(u)
 
         self._nodes.remove(u)
         del self._a_in[u]
@@ -175,12 +229,10 @@ class Graph:
         :param v: the 'to' node of the edge to be removed
         :raises ValueError: if edge (u, v) does not exist in this graph
         """
-        if v in self._a_out[u]:
-            self._a_out[u].remove(v)
-            self._a_in[v].remove(u)
-        else:
-            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
-                             f'is not defined')
+        self._verify_edge_defined(u, v)
+
+        self._a_out[u].remove(v)
+        self._a_in[v].remove(u)
 
     def __eq__(self, other):
         if isinstance(other, Graph):
@@ -267,7 +319,7 @@ class Undirected(Graph):
 class Unweighted(Graph):
     """
     An unweighted graph. Takes an existing Graph object and makes an unweighted
-    copy.
+    copy. The weight method can still be called, but it should always return 1.
     """
 
     def __init__(self, graph: Graph):
@@ -293,7 +345,7 @@ class Unweighted(Graph):
         self._weights[(u, v)] = 1
 
 
-def _quoted(s: Any):
+def _quoted(s: Any) -> str:
     """
     Reformat s to be added in a string. Returns s surrounded with quotes if s is
     of type str, otherwise returns the string representation of s.

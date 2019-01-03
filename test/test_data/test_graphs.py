@@ -18,7 +18,7 @@ class TestGraph(unittest.TestCase):
         self.g1 = Graph()
         self.g1.add_nodes('u', 'a', 'b', 'c', 'x', 'y')
         self.g1.add_edge('u', 'a')
-        self.g1.add_edge('a', 'u')
+        self.g1.add_edge('a', 'u', weight=10)
         self.g1.add_edge('u', 'c')
         self.g1.add_edge('c', 'a')
         self.g1.add_edge('c', 'b')
@@ -27,8 +27,8 @@ class TestGraph(unittest.TestCase):
 
         self.g2 = Graph()
         self.g2.add_nodes('a', 'b', 'c', 'd')
-        self.g2.add_edge('a', 'b')
-        self.g2.add_edge('a', 'd')
+        self.g2.add_edge('a', 'b', weight=5)
+        self.g2.add_edge('a', 'd', weight=-2)
         self.g2.add_edge('b', 'd')
         self.g2.add_edge('c', 'd')
 
@@ -76,6 +76,25 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(self.g1, g1_copy)
         self.assertFalse(self.g1 is g1_copy)
 
+    def test_weight_undefined_edge(self):
+        self.assertRaises(ValueError, self.g2.weight, 'd', 'b')
+
+    def test_weight_undefined_node(self):
+        self.assertRaises(ValueError, self.g2.weight, 'd', 'x')
+        self.assertRaises(ValueError, self.g2.weight, 'x', 'a')
+        self.assertRaises(ValueError, self.g2.weight, 'x', 'y')
+
+    def test_weight(self):
+        self.assertEqual(1, self.g1.weight('u', 'a'))
+        self.assertEqual(10, self.g1.weight('a', 'u'))
+        self.assertEqual(5, self.g2.weight('a', 'b'))
+        self.assertEqual(-2, self.g2.weight('a', 'd'))
+        self.assertEqual(1, self.g2.weight('b', 'd'))
+        self.assertEqual(1, self.g2.weight('c', 'd'))
+
+    def test_parents_undefined_node(self):
+        self.assertRaises(ValueError, self.g1.parents, 'z')
+
     def test_parents(self):
         self.assertEqual({'a', 'b'}, self.g1.parents('u'))
         self.assertEqual({'u', 'c'}, self.g1.parents('a'))
@@ -83,6 +102,9 @@ class TestGraph(unittest.TestCase):
         self.assertEqual({'u'}, self.g1.parents('c'))
         self.assertEqual(set(), self.g1.parents('x'))
         self.assertEqual({'x'}, self.g1.parents('y'))
+
+    def test_neighbors_undefined_node(self):
+        self.assertRaises(ValueError, self.g1.neighbors, 'z')
 
     def test_neighbors(self):
         self.assertEqual({'a', 'c'}, self.g1.neighbors('u'))
@@ -92,14 +114,26 @@ class TestGraph(unittest.TestCase):
         self.assertEqual({'y'}, self.g1.neighbors('x'))
         self.assertEqual(set(), self.g1.neighbors('y'))
 
+    def tst_add_node_defined_node(self):
+        self.assertRaises(ValueError, self.g1.add_node, 'u')
+        self.assertRaises(ValueError, self.g1.add_node, 'x')
+
+        self.g_empty.add_node(True)
+
+        self.assertRaises(ValueError, self.g_empty.add_node, 1)  # True == 1
+
     def test_add_node(self):
         self.g_empty.add_node(5)
         self.g_empty.add_node('hello')
         self.g_empty.add_node(True)
 
-        self.assertEqual({5, 'hello', True}, self.g_empty._nodes)
+        self.assertEqual({5, 'hello', True}, self.g_empty.nodes())
 
-        self.assertRaises(ValueError, self.g_empty.add_node, 1)
+    def test_add_nodes_defined_nodes(self):
+        self.assertRaises(ValueError, self.g2.add_nodes, 'f', 'c', 'g')
+
+        # no nodes should be added if add_nodes raises an exception
+        self.assertEqual({'a', 'b', 'c', 'd'}, self.g2.nodes())
 
     def test_add_nodes(self):
         onebyone = Graph()
@@ -111,6 +145,8 @@ class TestGraph(unittest.TestCase):
         allatonce.add_nodes('a', 'b', 'c')
 
         self.assertEqual(onebyone.nodes(), allatonce.nodes())
+
+    # def test_add_edge_
 
     def test_add_edge(self):
         self.assertRaises(ValueError, self.g_empty.add_edge, 'fake1', 'fake2')
