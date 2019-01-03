@@ -7,7 +7,7 @@ import math
 
 from typing import Iterable, Optional
 from collections import deque
-from heapdict import heapdict
+from heapdict import HeapDict
 
 from .types import Node
 from .graphs import Graph
@@ -138,15 +138,17 @@ class DijkstraIterator(GraphIterator):
         """
         super().__init__(graph, start, key=key)
 
-        self._worklist = heapdict()
+        self._worklist = HeapDict()
         for u in graph.nodes():
             self._worklist[u] = math.inf
         self._worklist[start] = 0
 
+    # TODO: Give distance information in iterable
+
     def _visit_next(self) -> Optional[Node]:
         try:
             (u, d_u) = self._worklist.popitem()
-        except IndexError:
+        except KeyError:
             return None
 
         neighbors = list(self._graph.neighbors(u))

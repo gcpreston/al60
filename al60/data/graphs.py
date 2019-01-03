@@ -2,7 +2,7 @@
 Module for graph representations.
 """
 
-from typing import Set, Dict
+from typing import Set, Dict, Any
 from .types import Node, Edge
 
 
@@ -73,12 +73,8 @@ class Graph:
         :return: the weight of edge (u, v)
         :raises ValueError: if (u, v) is not an existing edge
         """
-        # add quotes to str if needed
-        su = f"'{u}'" if isinstance(u, str) else u
-        sv = f"'{v}'" if isinstance(v, str) else v
-
         if v not in self._a_out[u]:
-            raise ValueError(f'invalid edge ({su}, {sv})')
+            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
 
         return self._weights[(u, v)]
 
@@ -143,15 +139,11 @@ class Graph:
         :raises ValueError: if u or v is not a defined node or (u, v) is a
             previously defined edge
         """
-        # TODO: Abstract adding quotes if str
-        # add quotes to str if needed
-        su = f"'{u}'" if isinstance(u, str) else u
-        sv = f"'{v}'" if isinstance(v, str) else v
-
         if not (u in self._nodes and v in self._nodes):
-            raise ValueError(f'invalid edge ({su}, {sv})')
+            raise ValueError(f'invalid edge ({_quoted(u)}, {_quoted(v)})')
         if v in self._a_out[u]:
-            raise ValueError(f'edge ({su}, {sv}) is already defined')
+            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
+                             f'is already defined')
 
         self._a_in[v].add(u)
         self._a_out[u].add(v)
@@ -187,10 +179,8 @@ class Graph:
             self._a_out[u].remove(v)
             self._a_in[v].remove(u)
         else:
-            # add quotes to str if needed
-            su = f"'{u}'" if isinstance(u, str) else u
-            sv = f"'{v}'" if isinstance(v, str) else v
-            raise ValueError(f'edge ({su}, {sv}) is not defined')
+            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
+                             f'is not defined')
 
     def __eq__(self, other):
         if isinstance(other, Graph):
@@ -259,10 +249,8 @@ class Undirected(Graph):
             self._a_out[v].remove(u)
             self._a_in[u].remove(v)
         else:
-            # add quotes to str if needed
-            su = f"'{u}'" if isinstance(u, str) else u
-            sv = f"'{v}'" if isinstance(v, str) else v
-            raise ValueError(f'edge ({su}, {sv}) is not defined')
+            raise ValueError(f'edge ({_quoted(u)}, {_quoted(v)})'
+                             f'is not defined')
 
     def __eq__(self, other):
         if isinstance(other, Undirected):
@@ -303,3 +291,14 @@ class Unweighted(Graph):
         """
         super().add_edge(u, v)
         self._weights[(u, v)] = 1
+
+
+def _quoted(s: Any):
+    """
+    Reformat s to be added in a string. Returns s surrounded with quotes if s is
+    of type str, otherwise returns the string representation of s.
+
+    :param s: the value to possibly add quotes to
+    :return: s reformatted
+    """
+    return f"'{s}'" if isinstance(s, str) else s
