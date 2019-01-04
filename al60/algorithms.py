@@ -2,10 +2,11 @@
 Various algorithm implementations.
 """
 
-from typing import Hashable, List, Tuple, Set, Callable
+from typing import List, Set, Callable
 from .data.types import Node
+
 from al60.data.graphs import Graph, Undirected
-from al60.data.iterators import DepthFirstIterator, BreadthFirstIterator
+from al60.data.iterators import DepthFirstIterator, DijkstraIterator
 
 
 def post_order(graph: Graph, v: Node) -> List[Node]:
@@ -75,7 +76,7 @@ def topological_sort(graph: Graph, key: Callable[[Node], int] = None)\
     return order
 
 
-def components(graph: Undirected) -> Tuple[Set[Node]]:
+def components(graph: Undirected) -> List[Set[Node]]:
     """
     Compute a tuple of sets of nodes that make up connected components in the
     given graph. Implemented as follows:
@@ -86,7 +87,7 @@ def components(graph: Undirected) -> Tuple[Set[Node]]:
     4. Remove the discovered nodes from the set and add them to the list as a
        new set: O(|V|) + O(|V|).
     5. Repeat until the set is empty: O(|V|).
-    6. Convert the list to a tuple and return it.
+    6. Return the list
 
     TODO: Calculate total runtime (3. and 5. are not necessarily multiplied)
 
@@ -98,10 +99,47 @@ def components(graph: Undirected) -> Tuple[Set[Node]]:
 
     while nodes:  # 5.
         # 3.
-        discovered: Set[Hashable] = set(
-            BreadthFirstIterator(graph, next(iter(nodes))))
+        discovered: Set[Node] = set(
+            DepthFirstIterator(graph, next(iter(nodes))))
         # 4.
         nodes.difference_update(discovered)
         comps.append(discovered)
 
-    return tuple(comps)  # 6.
+    return comps  # 6.
+
+
+def shortest_path(g: Graph, s: Node, t: Node) -> List[Node]:
+    """
+    Compute the shortest path from s to t in the given graph.
+
+    :param g: the graph to operate on
+    :param s: the start node
+    :param t: the end node
+    :return: a list of nodes making up the shortest path from s to t in g
+    :raises ValueError: if there is no path from s to t in g
+    """
+    # TODO: Fix shortest path with parent pointers
+    path = []
+    for (u, d_u) in DijkstraIterator(g, s):
+        path.append(u)
+        if u == t:
+            return path
+
+    raise ValueError(f'node {t} is not reachable from {s}')
+
+
+def distance(g: Graph, s: Node, t: Node) -> float:
+    """
+    Compute the shortest path distance from s to t in the given graph.
+
+    :param g: the graph to operate on
+    :param s: the start node
+    :param t: the end node
+    :return: the distance of the shortest path from s to  in g
+    :raises ValueError: if there is no path from s to t in g
+    """
+    for (u, d_u) in DijkstraIterator(g, s):
+        if u == t:
+            return d_u
+
+    raise ValueError(f'node {t} is not reachable from {s}')

@@ -6,7 +6,8 @@ import unittest
 import itertools
 
 from al60.data.graphs import Undirected, Graph
-from al60.algorithms import post_order, topological_sort, components
+from al60.algorithms import post_order, topological_sort, components,\
+    shortest_path, distance
 
 
 class TestGraphAlgorithms(unittest.TestCase):
@@ -47,6 +48,18 @@ class TestGraphAlgorithms(unittest.TestCase):
         self.g3.add_edge('x', 'y')
         self.g3.add_edge('y', 'z')
 
+        self.g4 = Graph()
+        self.g4.add_nodes('a', 'b', 'c', 'd', 'e')
+        self.g4.add_edge('a', 'b', weight=10)
+        self.g4.add_edge('a', 'c', weight=3)
+        self.g4.add_edge('b', 'c', weight=1)
+        self.g4.add_edge('b', 'd', weight=2)
+        self.g4.add_edge('c', 'b', weight=4)
+        self.g4.add_edge('c', 'd', weight=8)
+        self.g4.add_edge('c', 'e', weight=2)
+        self.g4.add_edge('d', 'e', weight=7)
+        self.g4.add_edge('e', 'd', weight=9)
+
     def test_post_order(self):
         self.assertRaises(ValueError, post_order, self.g1, 'fake')
 
@@ -70,7 +83,13 @@ class TestGraphAlgorithms(unittest.TestCase):
         # TODO: Test key
 
     def test_count_components(self):
-        self.assertTrue(components(self.g3) in
+        self.assertTrue(tuple(components(self.g3)) in
                         itertools.permutations([{'a', 'b', 'c'},
                                                 {'x', 'y', 'z'}]))
         # TODO: More tests
+
+    def test_shortest_path(self):
+        self.assertEqual(['a', 'c', 'b', 'd'], shortest_path(self.g4, 'a', 'd'))
+
+    def test_distance(self):
+        self.assertEqual(9, distance(self.g4, 'a', 'd'))
