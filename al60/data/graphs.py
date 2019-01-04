@@ -257,15 +257,26 @@ class Undirected(Graph):
     two nodes are connected.
     """
 
-    # TODO: Get rid of reverse directed edges? How to handle edge weights?
-    # TODO: Make graph optional?
-    def __init__(self, graph: Graph):
+    def __init__(self, other: Graph = None):
         """
-        Initialize a new Undirected.
+        Initialize a new Undirected. Optionally, make an undirected copy of an
+        existing Graph. The given Graph cannot have two nodes u and v such that
+        both edges (u, v) and (v, u) exist and have different weights.
 
-        :param graph: the Graph to make an undirected version of
+        :param other: the Graph to make an undirected version of
+        :raises ValueError: if the given Graph cannot be converted to an
+            an Undirected
         """
-        super().__init__(graph)
+        if other:
+            e = other.edges()
+            for (u, v) in e:
+                if (v, u) in e and other.weight(u, v) != other.weight(v, u):
+                    raise ValueError(f'edge weight conflict between nodes'
+                                     f'{u} and {v}')
+
+            super().__init__(other)
+        else:
+            super().__init__(Graph())
 
     def weight(self, u: Node, v: Node) -> float:
         """
@@ -359,15 +370,20 @@ class Unweighted(Graph):
     copy. The weight method can still be called, but it should always return 1.
     """
 
-    def __init__(self, graph: Graph):
+    def __init__(self, other: Graph = None):
         """
-        Initialize a new Unweighted.
+        Initialize a new Unweighted. Optionally, make an unweighted copy of an
+        existing Graph.
 
-        :param graph: the Graph to make an unweighted version of
+        :param other: the Graph to make an unweighted version of
         """
-        super().__init__(graph, default_weight=1)
+        # default_weight=1 by default
+        if other:
+            super().__init__(other)
+        else:
+            super().__init__(Graph())
 
-    def add_edge(self, u: Node, v: Node, weight: float = 1):
+    def add_edge(self, u: Node, v: Node, weight: float = 1) -> None:
         """
         Add an edge from u to v. The weight parameter sholuld not be used, as
         it is ignored.

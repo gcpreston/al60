@@ -4,7 +4,7 @@ Tests for graph classes defined in data.graphs.
 
 import unittest
 
-from al60.data.graphs import Graph, Undirected
+from al60.data.graphs import Graph, Undirected, Unweighted
 
 
 class TestGraph(unittest.TestCase):
@@ -201,6 +201,28 @@ class TestUndirectedGraph(unittest.TestCase):
 
         self.g2 = Undirected(self.g_directed)
 
+    def test_constructor(self):
+        self.assertEqual(Undirected(Graph()), Undirected())
+
+    def test_double_decorator(self):
+        double_g_directed = Undirected(Undirected(self.g_directed))
+        double_g2 = Undirected(self.g2)
+
+        self.assertEqual(self.g2, double_g_directed)
+        self.assertEqual(self.g2, double_g2)
+
+    def test_from_weighted_directed(self):
+        # adding another reverse edge should be fine and result in same graph
+        self.g_directed.add_edge(2, 1)
+        g3 = Undirected(self.g_directed)
+
+        self.assertEqual(self.g2, g3)
+
+        # adding different weight reverse edge should create ambiguous case
+        self.g_directed.add_edge(3, 1, weight=12)
+
+        self.assertRaises(ValueError, Undirected, self.g_directed)
+
     def test_parents(self):
         self.assertEqual({'b'}, self.g1.parents('a'))
         self.assertEqual({'a', 'c'}, self.g1.parents('b'))
@@ -210,13 +232,6 @@ class TestUndirectedGraph(unittest.TestCase):
         self.assertEqual({'b'}, self.g1.neighbors('a'))
         self.assertEqual({'a', 'c'}, self.g1.neighbors('b'))
         self.assertEqual({'b'}, self.g1.neighbors('c'))
-
-    def test_double_decorator(self):
-        double_g_directed = Undirected(Undirected(self.g_directed))
-        double_g2 = Undirected(self.g2)
-
-        self.assertEqual(self.g2, double_g_directed)
-        self.assertEqual(self.g2, double_g2)
 
     def test_add_edge_defined_edge(self):
         self.assertRaises(ValueError, self.g1.add_edge, 'b', 'a')
@@ -253,6 +268,41 @@ class TestUndirectedGraph(unittest.TestCase):
         self.assertNotEqual(self.g2, g2_test3)
 
     # TODO: Write more tests for undirected graph
+
+
+class TestUnweightedGraph(unittest.TestCase):
+    """
+    Tests for Unweighted.
+    """
+
+    def setUp(self):
+        self.g1 = Unweighted()
+        self.g1.add_nodes('a', 'b', 'c')
+
+    def test_constructor(self):
+        self.assertEqual(Unweighted(Graph()), Unweighted())
+        self.assertEqual(Unweighted(Undirected()), Undirected(Unweighted()))
+
+    def test_add_edge(self):
+        self.g1.add_edge('a', 'b')
+        self.g1.add_edge('b', 'c', weight=5.2)
+
+        self.assertEqual(1, self.g1.weight('a', 'b'))
+        self.assertEqual(1, self.g1.weight('b', 'c'))
+
+    def test_eq(self):
+        g2 = Unweighted(Undirected())
+        g3 = Undirected(Unweighted())
+
+        g2.add_nodes(1, 2, 3)
+        g2.add_edge(1, 3, weight=5)
+        g2.add_edge(3, 2)
+
+        g3.add_nodes(3, 2, 1)
+        g3.add_edge(3, 2, weight=7)
+        g3.add_edge(1, 3)
+
+        self.assertEqual(g2, g3)
 
 
 if __name__ == '__main__':
